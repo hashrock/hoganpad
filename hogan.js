@@ -3,6 +3,7 @@ var ctx = canv.getContext("2d");
 var gridColor = "#cccccc";
 var selectedColor = "#006600";
 var white = "#ffffff";
+var fontColor = "#000000";
 var gridSize = 20;
 
 var h = canv.clientHeight;
@@ -11,6 +12,8 @@ var gridX = Math.floor(w / gridSize);
 var gridY = Math.floor(h / gridSize);
 var sx = 0;
 var sy = 0;
+
+var alignPixel = 0.5;
 
 function drawCursor(ctx, x, y) {
     ctx.strokeStyle = selectedColor;
@@ -31,7 +34,7 @@ function drawCursor(ctx, x, y) {
 function drawCell(ctx, x, y) {
     ctx.strokeStyle = gridColor;
     ctx.lineWidth = 1;
-    ctx.strokeRect(x * gridSize + 0.5, y * gridSize + 0.5, gridSize, gridSize);
+    ctx.strokeRect(x * gridSize + alignPixel, y * gridSize + alignPixel, gridSize, gridSize);
 }
 
 function draw(ctx) {
@@ -70,9 +73,33 @@ window.onkeydown = function(e) {
     sy = sy < gridY - 1 ? sy : gridY - 1;
     clear(ctx, w, h);
     draw(ctx);
+    drawTexts(ctx, texts);
 }
 function clear(ctx, width, height) {
     ctx.clearRect(0, 0, width, height);
 }
 
+function drawText(ctx, option){
+    ctx.font = "14px arial";
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = fontColor;
+    ctx.fillText(option.text, (option.x + 0.1) * gridSize, (option.y + 0.5) * gridSize + alignPixel);
+}
+
+function drawTexts(ctx, objs){
+    objs.forEach(function(item){
+        drawText(ctx, item);
+    })
+}
+
+var texts = [
+    {
+        x: 1,
+        y: 1,
+        text: "Excel方眼紙だよ"
+    }
+]
+
+
 draw(ctx);
+drawTexts(ctx, texts);
