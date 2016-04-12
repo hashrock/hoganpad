@@ -48,34 +48,43 @@ function draw(ctx) {
 
 
 function updateTextField(){
-    var input = document.querySelector("input");
-    input.focus();
-    input.value = "";
+    hiddenInput.focus();
+    hiddenInput.value = "";
 }
 
 function getTextField(){
-    return document.querySelector("input").value;
+    return hiddenInput.value;
 }
 
 function showTextField(sx, sy){
-    var input = document.querySelector("input");
+    var input = hiddenInput;
     input.style.opacity = 1;
     input.style.left = sx * gridSize + "px";
     input.style.top = sy * gridSize + "px";
 }
 function hideTextField(){
-    var input = document.querySelector("input");
+    var input = hiddenInput;
     input.style.opacity = 0;
     input.style.left = "-100px";
     input.style.top = "-100px";
 }
 
 canv.onmousedown = function(e){
+    overwriteCell(getTextField(), sx, sy);
+    hideTextField();
+    updateTextField();    
     sx = Math.floor(e.offsetX / gridSize);
     sy = Math.floor(e.offsetY / gridSize);
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
+}
+
+canv.ondblclick = function(){
+    var input = hiddenInput;
+    input.value = getCellValue(sx, sy);
+    showTextField(sx, sy);
+    input.focus();
 }
 
 function clearCell(sx, sy){
@@ -153,7 +162,7 @@ window.onkeydown = function(e) {
             updateTextField();
             break;
         case 113: //F2
-            var input = document.querySelector("input");
+            var input = hiddenInput;
             input.value = getCellValue(sx, sy);
             showTextField(sx, sy);
             break;
@@ -201,5 +210,5 @@ var texts = [
 draw(ctx);
 drawTexts(ctx, texts);
 
-var input = document.querySelector("input");
-input.focus();
+var hiddenInput = document.querySelector(".hogan__hiddeninput");
+hiddenInput.focus();

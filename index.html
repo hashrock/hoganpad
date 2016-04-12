@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <title>Hoganshi</title>
     <style>
-    input {
+    .hogan__hiddeninput {
         line-height: 14px;
         font-size: 14px;
         border: none;
         box-sizing: border-box;
     }
-    input[type="text"]:focus {
+    .hogan__hiddeninput:focus {
         outline: 0;
     }
     </style>
@@ -20,7 +20,7 @@
         <canvas style="position: absolute;">
             
         </canvas>
-        <input type="text" style="position: absolute; z-index: 100; opacity: 0; top: -100px; left: -100px;">
+        <input class="hogan__hiddeninput" type="text" style="position: absolute; z-index: 100; opacity: 0; top: -100px; left: -100px;">
     </div>
     
     <script src="hogan.js"></script>
