@@ -66,8 +66,18 @@ function showTextField(sx, sy){
 function hideTextField(){
     var input = document.querySelector("input");
     input.style.opacity = 0;
+    input.style.left = "-100px";
+    input.style.top = "-100px";
+    
 }
 
+canv.onmousedown = function(e){
+    sx = Math.floor(e.offsetX / gridSize);
+    sy = Math.floor(e.offsetY / gridSize);
+    clear(ctx, w, h);
+    draw(ctx);
+    drawTexts(ctx, texts);
+}
 
 window.onkeydown = function(e) {
     switch (e.keyCode) {
