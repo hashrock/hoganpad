@@ -68,7 +68,6 @@ function hideTextField(){
     input.style.opacity = 0;
     input.style.left = "-100px";
     input.style.top = "-100px";
-    
 }
 
 canv.onmousedown = function(e){
@@ -79,52 +78,65 @@ canv.onmousedown = function(e){
     drawTexts(ctx, texts);
 }
 
+function clearCell(sx, sy){
+    var matched = -1;
+    texts.forEach(function(item, idx){
+        if(item.x === sx && item.y === sy){
+            matched = idx;
+        }
+    })
+    if(matched >= 0){
+        texts.splice(matched, 1);
+    }    
+}
+
+function overwriteCell(text, x, y){
+    if(text.length > 0){
+        clearCell(x, y);
+        texts.push({
+            x: x,
+            y: y,
+            text: text
+        })
+    }
+}
+
+
 window.onkeydown = function(e) {
     switch (e.keyCode) {
         case 37: //left
+            overwriteCell(getTextField(), sx, sy);
             sx += -1;
             sy += 0;
             hideTextField();
             updateTextField();
             break;
         case 38: //up
+            overwriteCell(getTextField(), sx, sy);
             sx += 0;
             sy += -1;
             hideTextField();
             updateTextField();
             break;
         case 39: //right
+            overwriteCell(getTextField(), sx, sy);
             sx += 1;
             sy += 0;
             hideTextField();
             updateTextField();
             break;
         case 40: //down
+            overwriteCell(getTextField(), sx, sy);
             sx += 0;
             sy += 1;
             hideTextField();
             updateTextField();
             break;
         case 46: //delete
-            var matched = -1;
-            texts.forEach(function(item, idx){
-                if(item.x === sx && item.y === sy){
-                    matched = idx;
-                }
-            })
-            if(matched >= 0){
-                texts.splice(matched, 1);
-            }
+            clearCell(sx, sy);
             break;            
         case 13: //enter
-            var input = getTextField();
-            if(input.length > 0){
-                texts.push({
-                    x: sx,
-                    y: sy,
-                    text: input
-                })
-            }
+            overwriteCell(getTextField(), sx, sy);
             sx += 0;
             sy += 1;
             hideTextField();
