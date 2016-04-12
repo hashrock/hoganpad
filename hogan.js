@@ -95,6 +95,17 @@ window.onkeydown = function(e) {
             hideTextField();
             updateTextField();
             break;
+        case 46: //delete
+            var matched = -1;
+            texts.forEach(function(item, idx){
+                if(item.x === sx && item.y === sy){
+                    matched = idx;
+                }
+            })
+            if(matched >= 0){
+                texts.splice(matched, 1);
+            }
+            break;            
         case 13: //enter
             var input = getTextField();
             if(input.length > 0){
