@@ -87,7 +87,17 @@ function clearCell(sx, sy){
     })
     if(matched >= 0){
         texts.splice(matched, 1);
-    }    
+    }
+}
+
+function getCellValue(sx, sy){
+    for(var i = 0; i < texts.length; i++){
+        var item = texts[i];
+        if(item.x === sx && item.y === sy){
+            return item.text;
+        }
+    }
+    return "";
 }
 
 function overwriteCell(text, x, y){
@@ -141,6 +151,11 @@ window.onkeydown = function(e) {
             sy += 1;
             hideTextField();
             updateTextField();
+            break;
+        case 113: //F2
+            var input = document.querySelector("input");
+            input.value = getCellValue(sx, sy);
+            showTextField(sx, sy);
             break;
         default:
             showTextField(sx, sy);
