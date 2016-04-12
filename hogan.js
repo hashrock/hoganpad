@@ -46,31 +46,80 @@ function draw(ctx) {
     drawCursor(ctx, sx, sy);
 }
 
+
+function updateTextField(){
+    var input = document.querySelector("input");
+    input.focus();
+    input.value = "";
+}
+
+function getTextField(){
+    return document.querySelector("input").value;
+}
+
+function showTextField(sx, sy){
+    var input = document.querySelector("input");
+    input.style.opacity = 1;
+    input.style.left = sx * gridSize + "px";
+    input.style.top = sy * gridSize + "px";
+}
+function hideTextField(){
+    var input = document.querySelector("input");
+    input.style.opacity = 0;
+}
+
+
 window.onkeydown = function(e) {
     switch (e.keyCode) {
         case 37: //left
             sx += -1;
             sy += 0;
+            hideTextField();
+            updateTextField();
             break;
         case 38: //up
             sx += 0;
             sy += -1;
+            hideTextField();
+            updateTextField();
             break;
         case 39: //right
             sx += 1;
             sy += 0;
+            hideTextField();
+            updateTextField();
             break;
         case 40: //down
             sx += 0;
             sy += 1;
+            hideTextField();
+            updateTextField();
+            break;
+        case 13: //enter
+            var input = getTextField();
+            if(input.length > 0){
+                texts.push({
+                    x: sx,
+                    y: sy,
+                    text: input
+                })
+            }
+            sx += 0;
+            sy += 1;
+            hideTextField();
+            updateTextField();
             break;
         default:
+            showTextField(sx, sy);
             break;
     }
     sx = sx > 0 ? sx : 0;
     sx = sx < gridX - 1 ? sx : gridX - 1;
     sy = sy > 0 ? sy : 0;
     sy = sy < gridY - 1 ? sy : gridY - 1;
+    
+
+    
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
@@ -103,3 +152,6 @@ var texts = [
 
 draw(ctx);
 drawTexts(ctx, texts);
+
+var input = document.querySelector("input");
+input.focus();
