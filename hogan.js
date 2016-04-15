@@ -13,17 +13,46 @@ var gridY = Math.floor(h / gridSize);
 var sx = 0;
 var sy = 0;
 
+//x0, y0, x1, y1
+var Selection = function(){
+    this.sx = 0;
+    this.sy = 0;
+    this.sw = 1;
+    this.sh = 1;
+}
+
+Selection.prototype.set = function(x, y){
+    this.sx = x;
+    this.sy = y;
+    this.sw = 1;
+    this.sh = 1;
+}
+
+Selection.prototype.move = function(rx, ry){
+    this.sx += rx;
+    this.sy += ry;
+    this.sw = 1;
+    this.sh = 1;
+
+    this.sx = this.sx > 0 ? this.sx : 0;
+    this.sx = this.sx < gridX - 1 ? this.sx : gridX - 1;
+    this.sy = this.sy > 0 ? this.sy : 0;
+    this.sy = this.sy < gridY - 1 ? this.sy : gridY - 1;
+}
+
+var selection = new Selection();
+
 var alignPixel = 0.5;
 
-function drawCursor(ctx, x, y) {
+function drawCursor(ctx, selection) {
     ctx.strokeStyle = selectedColor;
     ctx.lineWidth = 2;
     var handleSize = 5;
     var handleOffset = 2;
-    ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
+    ctx.strokeRect(selection.sx * gridSize, selection.sy * gridSize, gridSize, gridSize);
 
-    var rectStartX = (x + 1) * gridSize - handleSize + handleOffset;
-    var rectStartY = (y + 1) * gridSize - handleSize + handleOffset;
+    var rectStartX = (selection.sx + 1) * gridSize - handleSize + handleOffset;
+    var rectStartY = (selection.sy + 1) * gridSize - handleSize + handleOffset;
 
     ctx.fillStyle = white;
     ctx.fillRect(rectStartX - 1,rectStartY - 1,handleSize + 2,handleSize + 2);
@@ -43,7 +72,7 @@ function draw(ctx) {
             drawCell(ctx, j, i);
         }
     }
-    drawCursor(ctx, sx, sy);
+    drawCursor(ctx, selection);
 }
 
 
@@ -56,11 +85,11 @@ function getTextField(){
     return hiddenInput.value;
 }
 
-function showTextField(sx, sy){
+function showTextField(selection){
     var input = hiddenInput;
     input.style.opacity = 1;
-    input.style.left = sx * gridSize + "px";
-    input.style.top = sy * gridSize + "px";
+    input.style.left = selection.sx * gridSize + "px";
+    input.style.top = selection.sy * gridSize + "px";
 }
 function hideTextField(){
     var input = hiddenInput;
@@ -70,7 +99,7 @@ function hideTextField(){
 }
 
 canv.onmousedown = function(e){
-    overwriteCell(getTextField(), sx, sy);
+    overwriteCell(getTextField(), selection);
     hideTextField();
     updateTextField();    
     sx = Math.floor(e.offsetX / gridSize);
@@ -82,8 +111,8 @@ canv.onmousedown = function(e){
 
 canv.ondblclick = function(){
     var input = hiddenInput;
-    input.value = getCellValue(sx, sy);
-    showTextField(sx, sy);
+    input.value = getCellValue(selection);
+    showTextField(selection);
     input.focus();
 }
 
@@ -99,10 +128,10 @@ function clearCell(sx, sy){
     }
 }
 
-function getCellValue(sx, sy){
+function getCellValue(selection){
     for(var i = 0; i < texts.length; i++){
         var item = texts[i];
-        if(item.x === sx && item.y === sy){
+        if(item.x === selection.sx && item.y === selection.sy){
             return item.text;
         }
     }
@@ -124,56 +153,48 @@ function overwriteCell(text, x, y){
 window.onkeydown = function(e) {
     switch (e.keyCode) {
         case 37: //left
-            overwriteCell(getTextField(), sx, sy);
-            sx += -1;
-            sy += 0;
+            overwriteCell(getTextField(), selection.sx, selection.sy);
+            selection.move(-1, 0);
             hideTextField();
             updateTextField();
             break;
         case 38: //up
-            overwriteCell(getTextField(), sx, sy);
-            sx += 0;
-            sy += -1;
+            overwriteCell(getTextField(), selection.sx, selection.sy);
+            selection.move(0, -1);
             hideTextField();
             updateTextField();
             break;
         case 39: //right
-            overwriteCell(getTextField(), sx, sy);
-            sx += 1;
-            sy += 0;
+            overwriteCell(getTextField(), selection.sx, selection.sy);
+            selection.move(1, 0);
             hideTextField();
             updateTextField();
             break;
         case 40: //down
-            overwriteCell(getTextField(), sx, sy);
-            sx += 0;
-            sy += 1;
+            overwriteCell(getTextField(), selection.sx, selection.sy);
+            selection.move(0, 1);
             hideTextField();
             updateTextField();
             break;
         case 46: //delete
-            clearCell(sx, sy);
+            clearCell(selection.sx, selection.sy);
             break;            
         case 13: //enter
-            overwriteCell(getTextField(), sx, sy);
-            sx += 0;
-            sy += 1;
+            overwriteCell(getTextField(), selection.sx, selection.sy);
+            selection.move(0, 1);
             hideTextField();
             updateTextField();
             break;
         case 113: //F2
             var input = hiddenInput;
-            input.value = getCellValue(sx, sy);
-            showTextField(sx, sy);
+            input.value = getCellValue(selection);
+            showTextField(selection);
             break;
         default:
-            showTextField(sx, sy);
+            showTextField(selection);
             break;
     }
-    sx = sx > 0 ? sx : 0;
-    sx = sx < gridX - 1 ? sx : gridX - 1;
-    sy = sy > 0 ? sy : 0;
-    sy = sy < gridY - 1 ? sy : gridY - 1;
+
     
 
     
