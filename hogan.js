@@ -171,6 +171,14 @@ canv.onmouseup = function(e){
     updateTextField();
 }
 
+document.oncopy = function(e){
+    console.log(e);
+    e.preventDefault();
+}
+document.onpaste = function(e){
+    console.log(e);
+    e.preventDefault();
+}
 
 canv.ondblclick = function(){
     var input = hiddenInput;
@@ -248,7 +256,9 @@ window.onkeydown = function(e) {
             break;
         case 16: //shift
             selection.selectionStart();
-            break;            
+            break;
+        case 91: //ctrl
+            break;
         case 113: //F2
             var input = hiddenInput;
             input.value = getCellValue(selection);
