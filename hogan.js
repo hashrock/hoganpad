@@ -2,6 +2,7 @@ var canv = document.querySelector("canvas");
 var ctx = canv.getContext("2d");
 var gridColor = "#cccccc";
 var selectedColor = "#006600";
+var selectedBackColor = "rgba(0,0,0,0.1)";
 var white = "#ffffff";
 var fontColor = "#000000";
 var gridSize = 20;
@@ -17,8 +18,6 @@ var selectionMode = false;
 var Selection = function(){
     this.sx = 0;
     this.sy = 0;
-    this.sw = 1;
-    this.sh = 1;
     this.startx = -1;
     this.starty = -1;
     this.selectionMode = false;
@@ -28,13 +27,11 @@ var Selection = function(){
 Selection.prototype.set = function(x, y){
     this.sx = x;
     this.sy = y;
-    this.sw = 1;
-    this.sh = 1;
 }
 
 Selection.prototype.selectionStart = function(){
     this.startx = this.sx;
-    this.starty = this.y;
+    this.starty = this.sy;
     this.selectionMode = true;
 }
 Selection.prototype.selectionClear = function(){
@@ -60,20 +57,48 @@ var selection = new Selection();
 
 var alignPixel = 0.5;
 
-function drawCursor(ctx, selection) {
+
+function drawCursorRange(x, y, w, h){
     ctx.strokeStyle = selectedColor;
     ctx.lineWidth = 2;
     var handleSize = 5;
     var handleOffset = 2;
-    ctx.strokeRect(selection.sx * gridSize, selection.sy * gridSize, gridSize, gridSize);
+    ctx.strokeRect(x * gridSize, y * gridSize, w * gridSize, h * gridSize);
 
-    var rectStartX = (selection.sx + 1) * gridSize - handleSize + handleOffset;
-    var rectStartY = (selection.sy + 1) * gridSize - handleSize + handleOffset;
+    if(w > 1 || h > 1){
+        var backgroundMargin = 1;
+        ctx.fillStyle = selectedBackColor;
+        ctx.fillRect(
+            x * gridSize + backgroundMargin,
+            y * gridSize + backgroundMargin,
+            w * gridSize - backgroundMargin * 2,
+            h * gridSize - backgroundMargin * 2);
+    }
+
+    var rectStartX = (x + w) * gridSize - handleSize + handleOffset;
+    var rectStartY = (y + h) * gridSize - handleSize + handleOffset;
 
     ctx.fillStyle = white;
     ctx.fillRect(rectStartX - 1,rectStartY - 1,handleSize + 2,handleSize + 2);
     ctx.fillStyle = selectedColor;
     ctx.fillRect(rectStartX, rectStartY, handleSize, handleSize);
+}
+
+function drawCursorAt(x0, y0, x1, y1){
+    //左上を参照
+    var x = x0 < x1 ? x0 : x1;
+    var y = y0 < y1 ? y0 : y1;
+    var w = Math.abs(x0 - x1) + 1;
+    var h = Math.abs(y0 - y1) + 1;
+    drawCursorRange(x, y, w, h);
+}
+
+function drawCursor(ctx, selection) {
+    if(selection.selectionMode){
+        drawCursorAt(selection.startx, selection.starty, selection.sx, selection.sy);
+    }else{
+        drawCursorAt(selection.sx, selection.sy, selection.sx, selection.sy);
+    }
 }
 
 function drawCell(ctx, x, y) {
