@@ -11,13 +11,19 @@ var w = canv.clientWidth;
 var gridX = Math.floor(w / gridSize);
 var gridY = Math.floor(h / gridSize);
 
+var selectionMode = false;
+
 //x0, y0, x1, y1
 var Selection = function(){
     this.sx = 0;
     this.sy = 0;
     this.sw = 1;
     this.sh = 1;
+    this.startx = -1;
+    this.starty = -1;
+    this.selectionMode = false;
 }
+
 
 Selection.prototype.set = function(x, y){
     this.sx = x;
@@ -25,6 +31,18 @@ Selection.prototype.set = function(x, y){
     this.sw = 1;
     this.sh = 1;
 }
+
+Selection.prototype.selectionStart = function(){
+    this.startx = this.sx;
+    this.starty = this.y;
+    this.selectionMode = true;
+}
+Selection.prototype.selectionClear = function(){
+    this.startx = -1;
+    this.starty = -1;
+    this.selectionMode = false;
+}
+
 
 Selection.prototype.move = function(rx, ry){
     this.sx += rx;
@@ -97,11 +115,10 @@ function hideTextField(){
 }
 
 canv.onmousedown = function(e){
-    overwriteCell(getTextField(), selection);
+    overwriteCell(getTextField(), selection.sx, selection.sy);
     hideTextField();
     updateTextField();    
-    sx = Math.floor(e.offsetX / gridSize);
-    sy = Math.floor(e.offsetY / gridSize);
+    selection.set(Math.floor(e.offsetX / gridSize), Math.floor(e.offsetY / gridSize))
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
@@ -183,6 +200,9 @@ window.onkeydown = function(e) {
             hideTextField();
             updateTextField();
             break;
+        case 16: //shift
+            selection.selectionStart();
+            break;            
         case 113: //F2
             var input = hiddenInput;
             input.value = getCellValue(selection);
@@ -192,14 +212,21 @@ window.onkeydown = function(e) {
             showTextField(selection);
             break;
     }
-
-    
-
-    
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
 }
+
+window.onkeyup = function(e) {
+    switch (e.keyCode) {
+        case 16: //shift
+            selection.selectionClear();
+            break;
+        default:
+            break;
+    }
+}
+
 function clear(ctx, width, height) {
     ctx.clearRect(0, 0, width, height);
 }
