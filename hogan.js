@@ -100,21 +100,9 @@ function drawCursorRange(x, y, w, h){
     ctx.fillRect(rectStartX, rectStartY, handleSize, handleSize);
 }
 
-function drawCursorAt(x0, y0, x1, y1){
-    //左上を参照
-    var x = x0 < x1 ? x0 : x1;
-    var y = y0 < y1 ? y0 : y1;
-    var w = Math.abs(x0 - x1) + 1;
-    var h = Math.abs(y0 - y1) + 1;
-    drawCursorRange(x, y, w, h);
-}
-
 function drawCursor(ctx, selection) {
-    if(selection.selectionMode){
-        drawCursorAt(selection.startx, selection.starty, selection.sx, selection.sy);
-    }else{
-        drawCursorAt(selection.sx, selection.sy, selection.sx, selection.sy);
-    }
+    var info = selection.getInfo();
+    drawCursorRange(info.x, info.y, info.w, info.h);
 }
 
 function drawCell(ctx, x, y) {
