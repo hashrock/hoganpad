@@ -10,8 +10,6 @@ var h = canv.clientHeight;
 var w = canv.clientWidth;
 var gridX = Math.floor(w / gridSize);
 var gridY = Math.floor(h / gridSize);
-var sx = 0;
-var sy = 0;
 
 //x0, y0, x1, y1
 var Selection = function(){
