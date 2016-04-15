@@ -244,10 +244,7 @@ window.onkeydown = function(e) {
             }
             break;            
         case 13: //enter
-            overwriteCell(getTextField(), selection.sx, selection.sy);
-            selection.move(0, 1);
-            hideTextField();
-            updateTextField();
+            moveCursor(0, 1);
             break;
         case 16: //shift
             selection.selectionStart();
