@@ -35,11 +35,25 @@ Selection.prototype.selectionStart = function(){
     this.selectionMode = true;
 }
 Selection.prototype.selectionEnd = function(){
-    this.startx = -1;
-    this.starty = -1;
     this.selectionMode = false;
 }
 
+Selection.prototype.getInfo = function(){
+    var x0 = this.startx;
+    var y0 = this.starty;
+    var x1 = this.sx;
+    var y1 = this.sy;
+    var x = x0 < x1 ? x0 : x1;
+    var y = y0 < y1 ? y0 : y1;
+    var w = Math.abs(x0 - x1) + 1;
+    var h = Math.abs(y0 - y1) + 1;
+    return {
+        x: x,
+        y: y,
+        w: w,
+        h: h
+    }
+}
 
 Selection.prototype.move = function(rx, ry){
     this.sx += rx;
@@ -232,7 +246,16 @@ window.onkeydown = function(e) {
             updateTextField();
             break;
         case 46: //delete
-            clearCell(selection.sx, selection.sy);
+            var info = selection.getInfo();
+            if(info.h > 1 || info.y > 1){
+                for(var j = 0; j < info.h; j++){
+                    for(var i = 0; i < info.w; i++){
+                        clearCell(info.x + i, info.y + j);
+                    }
+                }
+            }else{
+                clearCell(selection.sx, selection.sy);
+            }
             break;            
         case 13: //enter
             overwriteCell(getTextField(), selection.sx, selection.sy);
@@ -260,7 +283,7 @@ window.onkeydown = function(e) {
 window.onkeyup = function(e) {
     switch (e.keyCode) {
         case 16: //shift
-            selection.selectionClear();
+            selection.selectionEnd();
             break;
         default:
             break;
