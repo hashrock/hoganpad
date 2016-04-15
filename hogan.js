@@ -142,8 +142,8 @@ canv.onmousedown = function(e){
     hideTextField();
     updateTextField();    
 
-    selection.selectionStart();
     selection.set(Math.floor(e.offsetX / gridSize), Math.floor(e.offsetY / gridSize))
+    selection.selectionStart();
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
@@ -160,6 +160,7 @@ canv.onmousemove = function(e){
 
 canv.onmouseup = function(e){
     selection.selectionClear();
+    updateTextField();
 }
 
 
