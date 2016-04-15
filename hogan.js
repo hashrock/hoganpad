@@ -58,6 +58,10 @@ Selection.prototype.getInfo = function(){
 Selection.prototype.move = function(rx, ry){
     this.sx += rx;
     this.sy += ry;
+    if(!this.selectionMode){
+        this.startx = this.sx;
+        this.starty = this.sy;
+    }
 
     this.sx = this.sx > 0 ? this.sx : 0;
     this.sx = this.sx < gridX - 1 ? this.sx : gridX - 1;
@@ -218,32 +222,27 @@ function overwriteCell(text, x, y){
     }
 }
 
+function moveCursor(rx, ry){
+    overwriteCell(getTextField(), selection.sx, selection.sy);
+    selection.move(rx, ry);
+    hideTextField();
+    updateTextField();
+}
+
 
 window.onkeydown = function(e) {
     switch (e.keyCode) {
         case 37: //left
-            overwriteCell(getTextField(), selection.sx, selection.sy);
-            selection.move(-1, 0);
-            hideTextField();
-            updateTextField();
+            moveCursor(-1, 0);
             break;
         case 38: //up
-            overwriteCell(getTextField(), selection.sx, selection.sy);
-            selection.move(0, -1);
-            hideTextField();
-            updateTextField();
+            moveCursor(0, -1);
             break;
         case 39: //right
-            overwriteCell(getTextField(), selection.sx, selection.sy);
-            selection.move(1, 0);
-            hideTextField();
-            updateTextField();
+            moveCursor(1, 0);
             break;
         case 40: //down
-            overwriteCell(getTextField(), selection.sx, selection.sy);
-            selection.move(0, 1);
-            hideTextField();
-            updateTextField();
+            moveCursor(0, 1);
             break;
         case 46: //delete
             var info = selection.getInfo();
