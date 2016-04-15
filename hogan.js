@@ -51,7 +51,8 @@ Selection.prototype.getInfo = function(){
         x: x,
         y: y,
         w: w,
-        h: h
+        h: h,
+        multiple: (h > 1 || y > 1)
     }
 }
 
@@ -234,14 +235,10 @@ window.onkeydown = function(e) {
             break;
         case 46: //delete
             var info = selection.getInfo();
-            if(info.h > 1 || info.y > 1){
-                for(var j = 0; j < info.h; j++){
-                    for(var i = 0; i < info.w; i++){
-                        clearCell(info.x + i, info.y + j);
-                    }
+            for(var j = 0; j < info.h; j++){
+                for(var i = 0; i < info.w; i++){
+                    clearCell(info.x + i, info.y + j);
                 }
-            }else{
-                clearCell(selection.sx, selection.sy);
             }
             break;            
         case 13: //enter
