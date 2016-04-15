@@ -44,8 +44,6 @@ Selection.prototype.selectionClear = function(){
 Selection.prototype.move = function(rx, ry){
     this.sx += rx;
     this.sy += ry;
-    this.sw = 1;
-    this.sh = 1;
 
     this.sx = this.sx > 0 ? this.sx : 0;
     this.sx = this.sx < gridX - 1 ? this.sx : gridX - 1;
@@ -143,11 +141,27 @@ canv.onmousedown = function(e){
     overwriteCell(getTextField(), selection.sx, selection.sy);
     hideTextField();
     updateTextField();    
+
+    selection.selectionStart();
     selection.set(Math.floor(e.offsetX / gridSize), Math.floor(e.offsetY / gridSize))
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
 }
+
+canv.onmousemove = function(e){
+    if(selection.selectionMode){
+        selection.set(Math.floor(e.offsetX / gridSize), Math.floor(e.offsetY / gridSize))
+        clear(ctx, w, h);
+        draw(ctx);
+        drawTexts(ctx, texts);
+    }
+}
+
+canv.onmouseup = function(e){
+    selection.selectionClear();
+}
+
 
 canv.ondblclick = function(){
     var input = hiddenInput;
