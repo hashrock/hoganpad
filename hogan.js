@@ -34,7 +34,7 @@ Selection.prototype.selectionStart = function(){
     this.starty = this.sy;
     this.selectionMode = true;
 }
-Selection.prototype.selectionClear = function(){
+Selection.prototype.selectionEnd = function(){
     this.startx = -1;
     this.starty = -1;
     this.selectionMode = false;
@@ -159,7 +159,7 @@ canv.onmousemove = function(e){
 }
 
 canv.onmouseup = function(e){
-    selection.selectionClear();
+    selection.selectionEnd();
     updateTextField();
 }
 
