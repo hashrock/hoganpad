@@ -13,6 +13,7 @@ var gridX = Math.floor(w / gridSize);
 var gridY = Math.floor(h / gridSize);
 
 var selectionMode = false;
+var isCellModified = false;
 
 //x0, y0, x1, y1
 var Selection = function(){
@@ -201,13 +202,14 @@ function getCellValue(selection){
 }
 
 function overwriteCell(text, x, y){
-    if(text.length > 0){
+    if(isCellModified){
         clearCell(x, y);
         texts.push({
             x: x,
             y: y,
             text: text
         })
+        isCellModified = false;
     }
 }
 
@@ -256,6 +258,7 @@ window.onkeydown = function(e) {
             showTextField(selection);
             break;
         default:
+            isCellModified = true;
             showTextField(selection);
             break;
     }
