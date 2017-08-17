@@ -1,47 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Hoganshi</title>
     <style>
-    .hogan__hiddeninput {
-        line-height: 14px;
-        font-size: 14px;
-        border: none;
-        box-sizing: border-box;
-    }
-    .hogan__hiddeninput:focus {
-        outline: 0;
-    }
+        .hogan__hiddeninput {
+            line-height: 14px;
+            font-size: 14px;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .hogan__hiddeninput:focus {
+            outline: 0;
+        }
+
+        .a4 {
+            position: relative;
+            margin: 0 auto;
+            /* A4サイズに収まる最大のサイズ */
+            /* 96dpiで計算 */
+            /* 190mm * 270mm = 718px x 1020px */
+            /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
+            width: 700px;
+            height: 1020px;
+            box-sizing: border-box;
+            background: white;
+        }
+
+        body {
+            background: #EEE;
+            width: 190mm;
+            /* needed for Chrome */
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+            }
+            .hidden-print {
+                display: none;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div style="position: relative; height: 300px;">
-        <canvas style="position: absolute;" width="300px" height="300px">
-            
+    <div class="a4">
+        <canvas style="position: absolute;" width="700" height="1020">
+
         </canvas>
         <input class="hogan__hiddeninput" type="text" style="position: absolute; z-index: 100; opacity: 0; top: -100px; left: -100px;">
     </div>
-    
-    <h3>できること</h3>
-    <ul>
-        <li>カーソルキー移動</li>
-        <li>マウス移動</li>
-        <li>F2編集</li>
-        <li>delete</li>
-        <li>選択範囲</li>
-    </ul>
 
-    <h3>できないこと</h3>
-    <ul>
-        <li>コピペ</li>
-        <li>行・列選択</li>
-        <li>数式</li>
-        <li>テキスト以外のセル型</li>
-        <li>スタイル</li>
-    </ul>
-    
+    <div class="hidden-print">
+        <h3>できること</h3>
+        <ul>
+            <li>カーソルキー移動</li>
+            <li>マウス移動</li>
+            <li>F2編集</li>
+            <li>delete</li>
+            <li>選択範囲</li>
+        </ul>
+
+        <h3>できないこと</h3>
+        <ul>
+            <li>コピペ</li>
+            <li>行・列選択</li>
+            <li>数式</li>
+            <li>テキスト以外のセル型</li>
+            <li>スタイル</li>
+        </ul>
+
+    </div>
     <script src="hogan.js"></script>
-    
+
 </body>
+
 </html>
