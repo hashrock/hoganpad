@@ -126,7 +126,6 @@ function draw(ctx) {
       drawCell(ctx, j, i);
     }
   }
-  drawCursor(ctx, selection);
 }
 
 function updateTextField() {
@@ -152,7 +151,7 @@ function hideTextField() {
 }
 
 canv.onmousedown = e => {
-  overwriteCell(getTextField(), selection.sx, selection.sy);
+  overwriteCell(getTextField(), selection);
   hideTextField();
   updateTextField();
 
@@ -164,6 +163,7 @@ canv.onmousedown = e => {
   clear(ctx, w, h);
   draw(ctx);
   drawTexts(ctx, texts);
+  drawCursor(ctx, selection);
 };
 
 canv.onmousemove = e => {
@@ -175,6 +175,7 @@ canv.onmousemove = e => {
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
+    drawCursor(ctx, selection);
   }
 };
 
@@ -221,20 +222,32 @@ function getCellValue(selection) {
   return "";
 }
 
-function overwriteCell(text, x, y) {
+function overwriteCell(text, selection) {
   if (isCellModified) {
-    clearCell(x, y);
-    texts.push({
-      x: x,
-      y: y,
-      text: text
-    });
+    clearCell(selection.x, selection.y);
+    if (selection.w > 1 || selection.h > 1) {
+      texts.push({
+        type: "box",
+        width: selection.w,
+        height: selection.h,
+        x: selection.x,
+        y: selection.y,
+        text: text
+      });
+    } else {
+      texts.push({
+        type: "text",
+        x: selection.x,
+        y: selection.y,
+        text: text
+      });
+    }
     isCellModified = false;
   }
 }
 
 function moveCursor(rx, ry) {
-  overwriteCell(getTextField(), selection.sx, selection.sy);
+  overwriteCell(getTextField(), selection.getInfo());
   selection.move(rx, ry);
   hideTextField();
   updateTextField();
@@ -283,6 +296,7 @@ window.onkeydown = e => {
   clear(ctx, w, h);
   draw(ctx);
   drawTexts(ctx, texts);
+  drawCursor(ctx, selection);
 };
 
 window.onkeyup = e => {
@@ -309,10 +323,43 @@ function drawText(ctx, option) {
     (option.y + 0.5) * gridSize + alignPixel
   );
 }
+function drawBox(ctx, option) {
+  ctx.save();
+  ctx.strokeWidth = "2px";
+  ctx.strokeStyle = "black";
+  ctx.fillStyle = "white";
+  ctx.fillRect(
+    option.x * gridSize,
+    option.y * gridSize,
+    option.width * gridSize,
+    option.height * gridSize
+  );
+  ctx.strokeRect(
+    option.x * gridSize + 0.5,
+    option.y * gridSize + 0.5,
+    option.width * gridSize,
+    option.height * gridSize
+  );
+  ctx.font = `${option.style ? option.style : "normal"} 14px arial`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.fillStyle = fontColor;
+  ctx.fillText(
+    option.text,
+    (option.x + 0.1) * gridSize + (option.width * gridSize) / 2,
+    option.y * gridSize + alignPixel + (option.height * gridSize) / 2
+  );
+  ctx.restore();
+}
 
 function drawTexts(ctx, objs) {
   objs.forEach(item => {
-    drawText(ctx, item);
+    if (item.type === "text") {
+      drawText(ctx, item);
+    }
+    if (item.type === "box") {
+      drawBox(ctx, item);
+    }
   });
 }
 
@@ -320,13 +367,23 @@ const texts = [
   {
     x: 1,
     y: 1,
+    type: "text",
     text: "Excel方眼紙だよ",
     style: "bold"
+  },
+  {
+    x: 2,
+    y: 2,
+    type: "box",
+    width: 10,
+    height: 2,
+    text: "箱だよ"
   }
 ];
 
 draw(ctx);
 drawTexts(ctx, texts);
+drawCursor(ctx, selection);
 
 const hiddenInput = document.querySelector(".hogan__hiddeninput");
 hiddenInput.focus();
