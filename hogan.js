@@ -212,12 +212,12 @@ function clearCell(sx, sy) {
 }
 
 function getCellValue(selection) {
-  for (let i = 0; i < texts.length; i++) {
-    const item = texts[i];
+  for (const item of texts) {
     if (item.x === selection.sx && item.y === selection.sy) {
       return item.text;
     }
   }
+
   return "";
 }
 
@@ -316,7 +316,7 @@ function drawTexts(ctx, objs) {
   });
 }
 
-var texts = [
+const texts = [
   {
     x: 1,
     y: 1,
@@ -328,5 +328,5 @@ var texts = [
 draw(ctx);
 drawTexts(ctx, texts);
 
-var hiddenInput = document.querySelector(".hogan__hiddeninput");
+const hiddenInput = document.querySelector(".hogan__hiddeninput");
 hiddenInput.focus();
