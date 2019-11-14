@@ -54,8 +54,8 @@ class Selection {
       y: y,
       w: w,
       h: h,
-      multiple: (h > 1 || y > 1)
-    }
+      multiple: h > 1 || y > 1
+    };
   }
 
   move(rx, ry) {
@@ -77,7 +77,6 @@ const selection = new Selection();
 
 const alignPixel = 0.5;
 
-
 function drawCursorRange(x, y, w, h) {
   ctx.strokeStyle = selectedColor;
   ctx.lineWidth = 2;
@@ -92,7 +91,8 @@ function drawCursorRange(x, y, w, h) {
       x * gridSize + backgroundMargin,
       y * gridSize + backgroundMargin,
       w * gridSize - backgroundMargin * 2,
-      h * gridSize - backgroundMargin * 2);
+      h * gridSize - backgroundMargin * 2
+    );
   }
 
   const rectStartX = (x + w) * gridSize - handleSize + handleOffset;
@@ -112,7 +112,12 @@ function drawCursor(ctx, selection) {
 function drawCell(ctx, x, y) {
   ctx.strokeStyle = gridColor;
   ctx.lineWidth = 1;
-  ctx.strokeRect(x * gridSize + alignPixel, y * gridSize + alignPixel, gridSize, gridSize);
+  ctx.strokeRect(
+    x * gridSize + alignPixel,
+    y * gridSize + alignPixel,
+    gridSize,
+    gridSize
+  );
 }
 
 function draw(ctx) {
@@ -123,7 +128,6 @@ function draw(ctx) {
   }
   drawCursor(ctx, selection);
 }
-
 
 function updateTextField() {
   hiddenInput.focus();
@@ -152,42 +156,48 @@ canv.onmousedown = e => {
   hideTextField();
   updateTextField();
 
-  selection.set(Math.floor(e.offsetX / gridSize), Math.floor(e.offsetY / gridSize))
+  selection.set(
+    Math.floor(e.offsetX / gridSize),
+    Math.floor(e.offsetY / gridSize)
+  );
   selection.selectionStart();
   clear(ctx, w, h);
   draw(ctx);
   drawTexts(ctx, texts);
-}
+};
 
 canv.onmousemove = e => {
   if (selection.selectionMode) {
-    selection.set(Math.floor(e.offsetX / gridSize), Math.floor(e.offsetY / gridSize))
+    selection.set(
+      Math.floor(e.offsetX / gridSize),
+      Math.floor(e.offsetY / gridSize)
+    );
     clear(ctx, w, h);
     draw(ctx);
     drawTexts(ctx, texts);
   }
-}
+};
 
 canv.onmouseup = e => {
   selection.selectionEnd();
   updateTextField();
-}
+};
 
 document.oncopy = e => {
   console.log(e);
   e.preventDefault();
-}
+};
 document.onpaste = e => {
   console.log(e);
   e.preventDefault();
-}
+};
 
 canv.ondblclick = () => {
   const input = hiddenInput;
   input.value = getCellValue(selection);
   showTextField(selection);
   input.focus();
-}
+};
 
 function clearCell(sx, sy) {
   let matched = -1;
@@ -195,7 +205,7 @@ function clearCell(sx, sy) {
     if (item.x === sx && item.y === sy) {
       matched = idx;
     }
-  })
+  });
   if (matched >= 0) {
     texts.splice(matched, 1);
   }
@@ -218,7 +228,7 @@ function overwriteCell(text, x, y) {
       x: x,
       y: y,
       text: text
-    })
+    });
     isCellModified = false;
   }
 }
@@ -229,7 +239,6 @@ function moveCursor(rx, ry) {
   hideTextField();
   updateTextField();
 }
-
 
 window.onkeydown = e => {
   switch (e.keyCode) {
@@ -274,7 +283,7 @@ window.onkeydown = e => {
   clear(ctx, w, h);
   draw(ctx);
   drawTexts(ctx, texts);
-}
+};
 
 window.onkeyup = e => {
   switch (e.keyCode) {
@@ -284,7 +293,7 @@ window.onkeyup = e => {
     default:
       break;
   }
-}
+};
 
 function clear(ctx, width, height) {
   ctx.clearRect(0, 0, width, height);
@@ -292,15 +301,19 @@ function clear(ctx, width, height) {
 
 function drawText(ctx, option) {
   ctx.font = `${option.style ? option.style : "normal"} 14px arial`;
-  ctx.textBaseline = 'middle';
+  ctx.textBaseline = "middle";
   ctx.fillStyle = fontColor;
-  ctx.fillText(option.text, (option.x + 0.1) * gridSize, (option.y + 0.5) * gridSize + alignPixel);
+  ctx.fillText(
+    option.text,
+    (option.x + 0.1) * gridSize,
+    (option.y + 0.5) * gridSize + alignPixel
+  );
 }
 
 function drawTexts(ctx, objs) {
   objs.forEach(item => {
     drawText(ctx, item);
-  })
+  });
 }
 
 var texts = [
@@ -310,8 +323,7 @@ var texts = [
     text: "Excel方眼紙だよ",
     style: "bold"
   }
-]
-
+];
 
 draw(ctx);
 drawTexts(ctx, texts);
