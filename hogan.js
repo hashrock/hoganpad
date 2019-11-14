@@ -71,6 +71,13 @@ class Selection {
     this.sy = this.sy > 0 ? this.sy : 0;
     this.sy = this.sy < gridY - 1 ? this.sy : gridY - 1;
   }
+
+  moveNextLine() {
+    const info = this.getInfo();
+    this.set(info.x, info.y + info.h);
+    this.startx = this.sx + info.w - 1;
+    this.starty = this.sy + info.h - 1;
+  }
 }
 
 const selection = new Selection();
@@ -246,6 +253,13 @@ function overwriteCell(text, selection) {
   }
 }
 
+function moveNextLine() {
+  overwriteCell(getTextField(), selection.getInfo());
+  selection.moveNextLine();
+  hideTextField();
+  updateTextField();
+}
+
 function moveCursor(rx, ry) {
   overwriteCell(getTextField(), selection.getInfo());
   selection.move(rx, ry);
@@ -276,7 +290,8 @@ window.onkeydown = e => {
       }
       break;
     case 13: //enter
-      moveCursor(0, 1);
+      // moveCursor(0, 1);
+      moveNextLine();
       break;
     case 16: //shift
       selection.selectionStart();
