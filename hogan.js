@@ -14,6 +14,7 @@ const gridY = Math.floor(h / gridSize);
 
 const selectionMode = false;
 let isCellModified = false;
+let isCellEditing = false;
 
 //x0, y0, x1, y1
 class Selection {
@@ -149,12 +150,14 @@ function showTextField(selection) {
   input.style.opacity = 1;
   input.style.left = selection.sx * gridSize + "px";
   input.style.top = selection.sy * gridSize + "px";
+  isCellEditing = true;
 }
 function hideTextField() {
   const input = hiddenInput;
   input.style.opacity = 0;
   input.style.left = "-100px";
   input.style.top = "-100px";
+  isCellEditing = false;
 }
 
 canv.onmousedown = e => {
@@ -294,7 +297,9 @@ window.onkeydown = e => {
       moveNextLine();
       break;
     case 16: //shift
-      selection.selectionStart();
+      if (!isCellEditing) {
+        selection.selectionStart();
+      }
       break;
     case 91: //ctrl
       break;
