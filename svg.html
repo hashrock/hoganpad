@@ -83,19 +83,29 @@
               y1: 0,
               x2: 0,
               y2: 1
-            }
+            },
+            selectionMode: false
           };
         },
         computed: {},
         methods: {
           onPointerDown(e) {
+            e.target.setPointerCapture(e.pointerId)
             this.selection.x1 = Math.floor(e.offsetX / gridSize);
             this.selection.y1 = Math.floor(e.offsetY / gridSize);
             this.selection.x2 = Math.floor(e.offsetX / gridSize);
             this.selection.y2 = Math.floor(e.offsetY / gridSize);
+            this.selectionMode = true;
           },
-          onPointerMove() {},
-          onPointerUp() {}
+          onPointerMove(e) {
+            if (this.selectionMode) {
+              this.selection.x2 = Math.floor(e.offsetX / gridSize);
+              this.selection.y2 = Math.floor(e.offsetY / gridSize);
+            }
+          },
+          onPointerUp() {
+            this.selectionMode = false;
+          }
         }
       });
     </script>
