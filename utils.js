@@ -27,3 +27,39 @@ Vue.component("hogan-grid", {
     }
   }
 });
+
+Vue.component("hogan-selection", {
+  props: ["selection"],
+  template: `
+  <rect
+    :x="selectionScreen.x"
+    :y="selectionScreen.y"
+    :height="selectionScreen.h"
+    :width="selectionScreen.w"
+  ></rect>
+    `,
+  computed: {
+    selectionWidth() {
+      return {
+        x:
+          this.selection.x1 <= this.selection.x2
+            ? this.selection.x1
+            : this.selection.x2,
+        y:
+          this.selection.y1 <= this.selection.y2
+            ? this.selection.y1
+            : this.selection.y2,
+        w: Math.abs(this.selection.x1 - this.selection.x2) + 1,
+        h: Math.abs(this.selection.y1 - this.selection.y2) + 1
+      };
+    },
+    selectionScreen() {
+      return {
+        x: this.selectionWidth.x * gridSize + 0.5,
+        y: this.selectionWidth.y * gridSize + 0.5,
+        w: this.selectionWidth.w * gridSize,
+        h: this.selectionWidth.h * gridSize
+      };
+    }
+  }
+});
