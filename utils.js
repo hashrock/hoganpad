@@ -1,6 +1,6 @@
 Vue.component("hogan-grid", {
-    props: ["width", "height"],
-    template: `
+  props: ["width", "height"],
+  template: `
       <g>
         <line
         v-for="(line, index) in vlines"
@@ -18,12 +18,12 @@ Vue.component("hogan-grid", {
       ></line>
       </g>
     `,
-    computed: {
-      vlines() {
-        return range(this.width / 20).map(i => i * 20 + 0.5);
-      },
-      hlines() {
-        return range(this.height / 20).map(i => i * 20 + 0.5);
-      }
+  computed: {
+    vlines() {
+      return range(this.width / 20).map(i => i * 20 + 0.5);
+    },
+    hlines() {
+      return range(this.height / 20).map(i => i * 20 + 0.5);
     }
-  });
+  }
+});
