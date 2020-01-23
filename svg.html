@@ -23,7 +23,11 @@
         background: white;
       }
       line {
-        stroke: #aaa;
+        stroke: #ddd;
+      }
+      rect {
+        stroke: #000;
+        fill: white;
       }
       @media print {
         body {
@@ -38,7 +42,15 @@
   </head>
   <body>
     <div id="app">
-      <svg class="a4" width="700" height="1020" viewBox="0 0 700 1020">
+      <svg
+        class="a4"
+        width="700"
+        height="1020"
+        viewBox="0 0 700 1020"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+      >
         <line
           v-for="(line, index) in vlines"
           :x1="line"
@@ -53,17 +65,30 @@
           :x2="width"
           :y2="line"
         ></line>
+
+        <rect
+          :x="selectionScreen.x"
+          :y="selectionScreen.y"
+          :height="selectionScreen.h"
+          :width="selectionScreen.w"
+        ></rect>
       </svg>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
 
     <script>
+      const height = 1020;
+      const width = 700;
+      const gridSize = 20;
+      const gridX = Math.floor(width / gridSize);
+      const gridY = Math.floor(height / gridSize);
+      const selectionMode = false;
+      let isCellModified = false;
+      let isCellEditing = false;
+
       function range(max) {
         return [...new Array(max).keys()];
       }
-
-      const height = 1020;
-      const width = 700;
 
       new Vue({
         el: "#app",
@@ -72,8 +97,32 @@
             width: width,
             height: height,
             vlines: range(width / 20).map(i => i * 20 + 0.5),
-            hlines: range(height / 20).map(i => i * 20 + 0.5)
+            hlines: range(height / 20).map(i => i * 20 + 0.5),
+            selection: {
+              x: 0,
+              y: 0,
+              w: 1,
+              h: 1
+            }
           };
+        },
+        computed: {
+          selectionScreen() {
+            return {
+              x: this.selection.x * gridSize + 0.5,
+              y: this.selection.y * gridSize + 0.5,
+              w: this.selection.w * gridSize,
+              h: this.selection.h * gridSize
+            };
+          }
+        },
+        methods: {
+          onPointerDown(e) {
+            this.selection.x = Math.floor(e.offsetX / gridSize);
+            this.selection.y = Math.floor(e.offsetY / gridSize);
+          },
+          onPointerMove() {},
+          onPointerUp() {}
         }
       });
     </script>
