@@ -43,6 +43,7 @@
   <body>
     <div id="app">
       <svg
+        tabindex="0"
         class="a4"
         width="700"
         height="1020"
@@ -50,6 +51,12 @@
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
+        @keydown.down.prevent="moveSelectionRelative(0, 1)"
+        @keydown.up.prevent="moveSelectionRelative(0, -1)"
+        @keydown.left.prevent="moveSelectionRelative(-1, 0)"
+        @keydown.right.prevent="moveSelectionRelative(1, 0)"
+        @keydown.16="shiftDown = true"
+        @keyup.16="shiftDown = false"
       >
         <hogan-grid :width="width" :height="height"></hogan-grid>
         <hogan-selection :selection="selection"></hogan-selection>
@@ -84,29 +91,57 @@
               x2: 0,
               y2: 1
             },
-            selectionMode: false
+            mouseDown: false,
+            shiftDown: false
           };
         },
-        computed: {},
+        computed: {
+          selectionMode() {
+            return this.mouseDown || this.shiftDown;
+          }
+        },
         methods: {
+          moveSelection(x, y) {
+            this.selection.x1 = x;
+            this.selection.y1 = y;
+            this.selection.x2 = x;
+            this.selection.y2 = y;
+          },
+          moveSelectionRelative(x, y, event) {
+            if (this.shiftDown) {
+              this.moveSelectionEnd(
+                this.selection.x1 + x,
+                this.selection.y1 + y
+              );
+            } else {
+              this.moveSelection(this.selection.x1 + x, this.selection.y1 + y);
+            }
+          },
+          moveSelectionEnd(x, y) {
+            this.selection.x1 = x;
+            this.selection.y1 = y;
+          },
           onPointerDown(e) {
-            e.target.setPointerCapture(e.pointerId)
-            this.selection.x1 = Math.floor(e.offsetX / gridSize);
-            this.selection.y1 = Math.floor(e.offsetY / gridSize);
-            this.selection.x2 = Math.floor(e.offsetX / gridSize);
-            this.selection.y2 = Math.floor(e.offsetY / gridSize);
-            this.selectionMode = true;
+            e.target.setPointerCapture(e.pointerId);
+            this.moveSelection(
+              Math.floor(e.offsetX / gridSize),
+              Math.floor(e.offsetY / gridSize)
+            );
+            this.mouseDown = true;
           },
           onPointerMove(e) {
             if (this.selectionMode) {
-              this.selection.x2 = Math.floor(e.offsetX / gridSize);
-              this.selection.y2 = Math.floor(e.offsetY / gridSize);
+              this.moveSelectionEnd(
+                Math.floor(e.offsetX / gridSize),
+                Math.floor(e.offsetY / gridSize)
+              );
             }
           },
           onPointerUp() {
-            this.selectionMode = false;
+            this.mouseDown = false;
           }
-        }
+        },
+        mounted() {}
       });
     </script>
   </body>
