@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>SVG version</title>
+    <style>
+      body {
+        margin: 40px;
+        background: #eee;
+      }
+      .a4 {
+        position: relative;
+        margin: 0 auto;
+        /* A4サイズに収まる最大のサイズ */
+        /* 96dpiで計算 */
+        /* 190mm * 270mm = 718px x 1020px */
+        /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
+        width: 700px;
+        height: 1020px;
+        box-sizing: border-box;
+        background: white;
+      }
+      line {
+        stroke: #aaa;
+      }
+      @media print {
+        body {
+          margin: 0px;
+          background: white;
+        }
+        line {
+          stroke: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <svg class="a4" width="700" height="1020" viewBox="0 0 700 1020">
+        <line
+          v-for="(line, index) in vlines"
+          :x1="line"
+          :y1="0"
+          :x2="line"
+          :y2="height"
+        ></line>
+        <line
+          v-for="(line, index) in hlines"
+          :x1="0"
+          :y1="line"
+          :x2="width"
+          :y2="line"
+        ></line>
+      </svg>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
+
+    <script>
+      function range(max) {
+        return [...new Array(max).keys()];
+      }
+
+      const height = 1020;
+      const width = 700;
+
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            width: width,
+            height: height,
+            vlines: range(width / 20).map(i => i * 20 + 0.5),
+            hlines: range(height / 20).map(i => i * 20 + 0.5)
+          };
+        }
+      });
+    </script>
+  </body>
+</html>
