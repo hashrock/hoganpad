@@ -51,21 +51,7 @@
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
       >
-        <line
-          v-for="(line, index) in vlines"
-          :x1="line"
-          :y1="0"
-          :x2="line"
-          :y2="height"
-        ></line>
-        <line
-          v-for="(line, index) in hlines"
-          :x1="0"
-          :y1="line"
-          :x2="width"
-          :y2="line"
-        ></line>
-
+        <hogan-grid :width="width" :height="height"></hogan-grid>
         <rect
           :x="selectionScreen.x"
           :y="selectionScreen.y"
@@ -75,6 +61,7 @@
       </svg>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
+    <script src="./utils.js"></script>
 
     <script>
       const height = 1020;
@@ -96,8 +83,6 @@
           return {
             width: width,
             height: height,
-            vlines: range(width / 20).map(i => i * 20 + 0.5),
-            hlines: range(height / 20).map(i => i * 20 + 0.5),
             selection: {
               x: 0,
               y: 0,
