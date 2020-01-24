@@ -90,6 +90,7 @@ new Vue({
           this.removeHere();
           break;
         case 13: //enter
+          this.moveNextLine();
           break;
         case 16: //shift
           break;
