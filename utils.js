@@ -75,3 +75,40 @@ function computeSelection(selection) {
     h: Math.abs(selection.y1 - selection.y2) + 1
   };
 }
+
+Vue.component("hogan-item-text", {
+  template: `
+  <text
+    v-if="item.type === 'text'"
+    :x="item.x * gridSize"
+    :y="item.y * gridSize"
+    dominant-baseline="text-before-edge"
+    :font-size="14"
+  >
+    {{item.text}}
+  </text>
+  `,
+  props: ["item", "gridSize"]
+});
+
+Vue.component("hogan-item-box", {
+  template: `
+  <g v-if="item.type === 'box'">
+    <rect
+      :x="(item.x) * gridSize + 0.5"
+      :y="(item.y) * gridSize + 0.5"
+      :width="item.width * gridSize"
+      :height="item.height * gridSize"
+    ></rect>
+    <text
+      dominant-baseline="central"
+      text-anchor="middle"
+      :x="(item.x + item.width / 2) * gridSize"
+      :y="(item.y + item.height / 2) * gridSize"
+    >
+      {{item.text}}
+    </text>
+  </g>
+  `,
+  props: ["item", "gridSize"]
+});

@@ -44,7 +44,6 @@
         }
       }
       text {
-        font-size: 14px;
         user-select: none;
       }
       #app {
@@ -82,30 +81,8 @@
       >
         <hogan-grid :width="width" :height="height"></hogan-grid>
         <g v-for="item in items">
-          <text
-            v-if="item.type === 'text'"
-            :x="item.x * gridSize"
-            :y="item.y * gridSize  + gridSize / 2"
-            dominant-baseline="central"
-          >
-            {{item.text}}
-          </text>
-          <g v-if="item.type === 'box'">
-            <rect
-              :x="(item.x) * gridSize + 0.5"
-              :y="(item.y) * gridSize + 0.5"
-              :width="item.width * gridSize"
-              :height="item.height * gridSize"
-            ></rect>
-            <text
-              dominant-baseline="central"
-              text-anchor="middle"
-              :x="(item.x + item.width / 2) * gridSize"
-              :y="(item.y + item.height / 2) * gridSize"
-            >
-              {{item.text}}
-            </text>
-          </g>
+          <hogan-item-text :item="item" :grid-size="gridSize"></hogan-item-text>
+          <hogan-item-box :item="item" :grid-size="gridSize"></hogan-item-box>
         </g>
         <hogan-selection
           ref="selection"
