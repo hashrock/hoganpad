@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>SVG version</title>
+    <style>
+      body {
+        margin: 10px;
+        background: #eee;
+      }
+      .a4 {
+        position: relative;
+        margin: 0 auto;
+        /* A4サイズに収まる最大のサイズ */
+        /* 96dpiで計算 */
+        /* 190mm * 270mm = 718px x 1020px */
+        /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
+        width: 700px;
+        height: 1020px;
+        box-sizing: border-box;
+        background: white;
+      }
+      line {
+        stroke: #ddd;
+      }
+      rect {
+        stroke: black;
+        fill: white;
+      }
+      rect.selection {
+        stroke: green;
+        fill: rgba(255, 255, 255, 0.5);
+      }
+      @media print {
+        body {
+          margin: 0px;
+          background: white;
+        }
+        line {
+          stroke: none;
+        }
+      }
+      text {
+        font-size: 14px;
+
+        user-select: none;
+      }
+      #app{
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" tabindex="0">
+      <svg
+        ref="canvas"        
+        tabindex="0"
+        class="a4"
+        width="700"
+        height="1020"
+        viewBox="0 0 700 1020"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @keydown.down.prevent="moveSelectionRelative(0, 1)"
+        @keydown.up.prevent="moveSelectionRelative(0, -1)"
+        @keydown.left.prevent="moveSelectionRelative(-1, 0)"
+        @keydown.right.prevent="moveSelectionRelative(1, 0)"
+        @keydown.16="shiftDown = true"
+        @keyup.16="shiftDown = false"
+        @keydown="onKeyDown"
+        @dblclick="editHere"
+      >
+        <hogan-grid :width="width" :height="height"></hogan-grid>
+        <g v-for="item in items">
+          <text
+            v-if="item.type === 'text'"
+            :x="item.x * gridSize"
+            :y="item.y * gridSize  + gridSize / 2"
+            dominant-baseline="central"
+          >
+            {{item.text}}
+          </text>
+          <g v-if="item.type === 'box'">
+            <rect
+              :x="(item.x) * gridSize + 0.5"
+              :y="(item.y) * gridSize + 0.5"
+              :width="item.width * gridSize"
+              :height="item.height * gridSize"
+            ></rect>
+            <text
+              dominant-baseline="central"
+              text-anchor="middle"
+              :x="(item.x + item.width / 2) * gridSize"
+              :y="(item.y + item.height / 2) * gridSize"
+            >
+              {{item.text}}
+            </text>
+          </g>
+        </g>
+        <hogan-selection ref="selection" :selection="selection"></hogan-selection>
+      </svg>
+      <form @submit.prevent="moveNextLine">
+        <input v-model="editingValue" v-show="isCellEditing" class="hogan__hiddeninput" ref="hiddenInput" type="text" style="position: absolute; z-index: 100; top: -100px; left: -100px;" :style="inputPosition">
+      </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
+    <script src="./utils.js"></script>
+    <script src="./svg.js"></script>
+  </body>
+</html>
