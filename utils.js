@@ -56,8 +56,8 @@ Vue.component("hogan-selection", {
     },
     selectionScreen() {
       return {
-        x: this.selectionWidth.x * gridSize + 0.5,
-        y: this.selectionWidth.y * gridSize + 0.5,
+        x: this.selectionWidth.x * gridSize,
+        y: this.selectionWidth.y * gridSize,
         w: this.selectionWidth.w * gridSize,
         h: this.selectionWidth.h * gridSize
       };

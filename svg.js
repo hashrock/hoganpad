@@ -53,8 +53,8 @@ new Vue({
     },
     inputPosition() {
       return {
-        top: `${this.selection.y1 * this.gridSize}px `,
-        left: `${this.selection.x1 * this.gridSize}px`
+        top: `${this.selectionComputed.top * this.gridSize}px `,
+        left: `${this.selectionComputed.left * this.gridSize}px`
       };
     },
     selectionComputed() {
@@ -117,7 +117,21 @@ new Vue({
       }
     },
     moveNextLine() {
-      this.moveSelectionRelative(0, 1);
+      if (this.isCellEditing) {
+        this.commitEditing();
+        this.isCellEditing = false;
+        this.focusCanvas();
+      }
+      const nextline = this.selectionComputed.top + 1;
+      const height = this.selectionComputed.h;
+      const width = this.selectionComputed.w;
+
+      this.selection.x1 = this.selectionComputed.left;
+      this.selection.y1 = nextline;
+      this.selection.x2 = this.selectionComputed.left + width - 1;
+      this.selection.y2 = nextline + height - 1;
+
+      this.editingValue = this.editingItem ? this.editingItem.text : "";
     },
     moveSelection(x, y) {
       if (this.isCellEditing) {

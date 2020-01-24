@@ -32,6 +32,7 @@
       rect.selection {
         stroke: green;
         fill: rgba(255, 255, 255, 0.5);
+        stroke-width: 2;
       }
       @media print {
         body {
@@ -44,18 +45,24 @@
       }
       text {
         font-size: 14px;
-
         user-select: none;
       }
-      #app{
+      #app {
         position: relative;
+      }
+      input {
+        font-size: 14px;
+        font-family: inherit;
+        padding: 0;
+        margin: 0;
+        border: none;
       }
     </style>
   </head>
   <body>
     <div id="app" tabindex="0">
       <svg
-        ref="canvas"        
+        ref="canvas"
         tabindex="0"
         class="a4"
         width="700"
@@ -100,10 +107,21 @@
             </text>
           </g>
         </g>
-        <hogan-selection ref="selection" :selection="selection"></hogan-selection>
+        <hogan-selection
+          ref="selection"
+          :selection="selection"
+        ></hogan-selection>
       </svg>
       <form @submit.prevent="moveNextLine">
-        <input v-model="editingValue" v-show="isCellEditing" class="hogan__hiddeninput" ref="hiddenInput" type="text" style="position: absolute; z-index: 100; top: -100px; left: -100px;" :style="inputPosition">
+        <input
+          v-model="editingValue"
+          v-show="isCellEditing"
+          class="hogan__hiddeninput"
+          ref="hiddenInput"
+          type="text"
+          style="position: absolute; z-index: 100; top: -100px; left: -100px;"
+          :style="inputPosition"
+        />
       </form>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
