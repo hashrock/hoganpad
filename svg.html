@@ -53,8 +53,9 @@
     </style>
   </head>
   <body>
-    <div id="app">
+    <div id="app" tabindex="0">
       <svg
+        ref="canvas"        
         tabindex="0"
         class="a4"
         width="700"
@@ -69,13 +70,15 @@
         @keydown.right.prevent="moveSelectionRelative(1, 0)"
         @keydown.16="shiftDown = true"
         @keyup.16="shiftDown = false"
+        @keydown="onKeyDown"
+        @dblclick="editHere"
       >
         <hogan-grid :width="width" :height="height"></hogan-grid>
         <g v-for="item in items">
           <text
             v-if="item.type === 'text'"
             :x="item.x * gridSize"
-            :y="item.y * gridSize  - gridSize / 2"
+            :y="item.y * gridSize  + gridSize / 2"
             dominant-baseline="central"
           >
             {{item.text}}
@@ -99,7 +102,9 @@
         </g>
         <hogan-selection ref="selection" :selection="selection"></hogan-selection>
       </svg>
-      <input v-if="editing" class="hogan__hiddeninput" ref="hiddenInput" type="text" style="position: absolute; z-index: 100; top: -100px; left: -100px;" :style="inputPosition">
+      <form @submit.prevent="moveNextLine">
+        <input v-model="editingValue" v-show="isCellEditing" class="hogan__hiddeninput" ref="hiddenInput" type="text" style="position: absolute; z-index: 100; top: -100px; left: -100px;" :style="inputPosition">
+      </form>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
     <script src="./utils.js"></script>
