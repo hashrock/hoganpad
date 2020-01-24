@@ -58,26 +58,7 @@ new Vue({
       };
     },
     selectionComputed() {
-      return {
-        left:
-          this.selection.x1 <= this.selection.x2
-            ? this.selection.x1
-            : this.selection.x2,
-        top:
-          this.selection.y1 <= this.selection.y2
-            ? this.selection.y1
-            : this.selection.y2,
-        right:
-          this.selection.x1 > this.selection.x2
-            ? this.selection.x1
-            : this.selection.x2,
-        bottom:
-          this.selection.y1 > this.selection.y2
-            ? this.selection.y1
-            : this.selection.y2,
-        w: Math.abs(this.selection.x1 - this.selection.x2) + 1,
-        h: Math.abs(this.selection.y1 - this.selection.y2) + 1
-      };
+      return computeSelection(this.selection);
     },
     editingItemIndex() {
       return this.items.indexOf(this.editingItem);
