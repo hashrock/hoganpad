@@ -59,7 +59,12 @@
     </style>
   </head>
   <body>
-    <div id="app" tabindex="0">
+    <div
+      id="app"
+      tabindex="0"
+      @keydown.16="shiftDown = true"
+      @keyup.16="shiftDown = false"
+    >
       <svg
         ref="canvas"
         tabindex="0"
@@ -74,8 +79,6 @@
         @keydown.up.prevent="moveSelectionRelative(0, -1)"
         @keydown.left.prevent="moveSelectionRelative(-1, 0)"
         @keydown.right.prevent="moveSelectionRelative(1, 0)"
-        @keydown.16="shiftDown = true"
-        @keyup.16="shiftDown = false"
         @keydown="onKeyDown"
         @dblclick="editHere"
       >
