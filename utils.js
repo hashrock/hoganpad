@@ -80,15 +80,38 @@ Vue.component("hogan-item-text", {
   template: `
   <text
     v-if="item.type === 'text'"
-    :x="item.x * gridSize"
+    :x="item.x * gridSize + gridSize / 4"
     :y="item.y * gridSize"
     dominant-baseline="text-before-edge"
-    :font-size="14"
+    :font-size="fontSize"
   >
-    {{item.text}}
+    {{text}}
   </text>
   `,
-  props: ["item", "gridSize"]
+  props: ["item", "gridSize"],
+  computed: {
+    fontSize() {
+      if (this.heading) {
+        return [56, 42, 28][this.heading.level - 1];
+      }
+      return 14;
+    },
+    heading() {
+      const m = this.item.text.match(/^([#]+) (.*)/);
+      return m
+        ? {
+            level: m[1].length,
+            text: m[2]
+          }
+        : null;
+    },
+    text() {
+      if (this.heading) {
+        return this.heading.text;
+      }
+      return this.item.text;
+    }
+  }
 });
 
 Vue.component("hogan-item-box", {
@@ -102,13 +125,51 @@ Vue.component("hogan-item-box", {
     ></rect>
     <text
       dominant-baseline="central"
-      text-anchor="middle"
-      :x="(item.x + item.width / 2) * gridSize"
+      :text-anchor="textAnchor"
+      :x="x"
       :y="(item.y + item.height / 2) * gridSize"
     >
-      {{item.text}}
+      {{text}}
     </text>
   </g>
   `,
-  props: ["item", "gridSize"]
+  props: ["item", "gridSize"],
+  computed: {
+    anchorLeft() {
+      return this.item.text.charAt(0) === ":";
+    },
+    anchorRight() {
+      return this.item.text.charAt(this.item.text.length - 1) === ":";
+    },
+    textAnchor() {
+      if (this.anchorLeft) {
+        return "start";
+      }
+      if (this.anchorRight) {
+        return "end";
+      }
+      return "middle";
+    },
+    text() {
+      if (this.anchorLeft) {
+        return this.item.text.slice(1);
+      }
+      if (this.anchorRight) {
+        return this.item.text.slice(0, -1);
+      }
+      return this.item.text;
+    },
+    x() {
+      if (this.anchorLeft) {
+        return this.item.x * this.gridSize + this.gridSize / 4;
+      }
+      if (this.anchorRight) {
+        return (
+          (this.item.x + this.item.width) * this.gridSize - this.gridSize / 4
+        );
+      }
+
+      return (this.item.x + this.item.width / 2) * this.gridSize;
+    }
+  }
 });

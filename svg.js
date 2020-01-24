@@ -115,6 +115,7 @@ new Vue({
       if (this.editingItemIndex >= 0) {
         this.items.splice(this.editingItemIndex, 1);
       }
+      this.editingValue = "";
     },
     moveNextLine() {
       if (this.isCellEditing) {
