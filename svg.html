@@ -47,6 +47,9 @@
 
         user-select: none;
       }
+      #app{
+        position: relative;
+      }
     </style>
   </head>
   <body>
@@ -94,8 +97,9 @@
             </text>
           </g>
         </g>
-        <hogan-selection :selection="selection"></hogan-selection>
+        <hogan-selection ref="selection" :selection="selection"></hogan-selection>
       </svg>
+      <input v-if="editing" class="hogan__hiddeninput" ref="hiddenInput" type="text" style="position: absolute; z-index: 100; top: -100px; left: -100px;" :style="inputPosition">
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
     <script src="./utils.js"></script>

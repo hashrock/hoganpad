@@ -28,7 +28,6 @@ const texts = [
   }
 ];
 
-
 new Vue({
   el: "#app",
   data() {
@@ -44,15 +43,28 @@ new Vue({
       mouseDown: false,
       shiftDown: false,
       items: texts,
-      gridSize: gridSize
+      gridSize: gridSize,
+      editing: false
     };
   },
   computed: {
     selectionMode() {
       return this.mouseDown || this.shiftDown;
+    },
+    inputPosition() {
+      return {
+        top: `${this.selection.y1 * this.gridSize}px `,
+        left: `${this.selection.x1 * this.gridSize}px`
+      };
     }
   },
   methods: {
+    editHere(){
+        this.editing = true
+        this.$nextTick(()=>{
+            this.focusInput();
+        })
+    },
     moveSelection(x, y) {
       this.selection.x1 = x;
       this.selection.y1 = y;
@@ -88,7 +100,12 @@ new Vue({
     },
     onPointerUp() {
       this.mouseDown = false;
+    },
+    focusInput() {
+      this.$refs.hiddenInput.focus();
     }
   },
-  mounted() {}
+  mounted() {
+    this.focusInput();
+  }
 });
