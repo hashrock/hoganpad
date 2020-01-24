@@ -122,9 +122,9 @@ new Vue({
         this.isCellEditing = false;
         this.focusCanvas();
       }
-      const nextline = this.selectionComputed.top + 1;
       const height = this.selectionComputed.h;
       const width = this.selectionComputed.w;
+      const nextline = this.selectionComputed.top + height;
 
       this.selection.x1 = this.selectionComputed.left;
       this.selection.y1 = nextline;
