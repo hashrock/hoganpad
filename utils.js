@@ -36,6 +36,7 @@ Vue.component("hogan-selection", {
     :y="selectionScreen.y"
     :height="selectionScreen.h"
     :width="selectionScreen.w"
+    class="selection"
   ></rect>
     `,
   computed: {

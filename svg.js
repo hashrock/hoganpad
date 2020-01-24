@@ -10,6 +10,24 @@ let isCellEditing = false;
 function range(max) {
   return [...new Array(max).keys()];
 }
+const texts = [
+  {
+    x: 1,
+    y: 1,
+    type: "text",
+    text: "Excel方眼紙だよ",
+    style: "bold"
+  },
+  {
+    x: 2,
+    y: 2,
+    type: "box",
+    width: 10,
+    height: 2,
+    text: "箱だよ"
+  }
+];
+
 
 new Vue({
   el: "#app",
@@ -24,7 +42,9 @@ new Vue({
         y2: 1
       },
       mouseDown: false,
-      shiftDown: false
+      shiftDown: false,
+      items: texts,
+      gridSize: gridSize
     };
   },
   computed: {
@@ -41,10 +61,7 @@ new Vue({
     },
     moveSelectionRelative(x, y, event) {
       if (this.shiftDown) {
-        this.moveSelectionEnd(
-          this.selection.x1 + x,
-          this.selection.y1 + y
-        );
+        this.moveSelectionEnd(this.selection.x1 + x, this.selection.y1 + y);
       } else {
         this.moveSelection(this.selection.x1 + x, this.selection.y1 + y);
       }
