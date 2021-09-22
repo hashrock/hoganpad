@@ -5,6 +5,7 @@ const gridX = Math.floor(width / gridSize);
 const gridY = Math.floor(height / gridSize);
 const selectionMode = false;
 let isCellModified = false;
+let handle = null;
 
 function range(max) {
   return [...new Array(max).keys()];
@@ -56,9 +57,16 @@ new Vue({
       return this.mouseDown || this.shiftDown;
     },
     inputPosition() {
+      if (!this.isCellEditing) {
+        return {
+          top: "-100px",
+          left: "-100px",
+          opacity: 0
+        }
+      }
       return {
         top: `${this.selectionComputed.top * this.gridSize}px `,
-        left: `${this.selectionComputed.left * this.gridSize}px`
+        left: `${this.selectionComputed.left * this.gridSize}px`,
       };
     },
     selectionComputed() {
@@ -98,7 +106,7 @@ new Vue({
           this.removeHere();
           break;
         case 13: //enter
-          this.moveNextLine();
+          // this.moveNextLine();
           break;
         case 16: //shift
           break;
@@ -129,7 +137,6 @@ new Vue({
       if (this.isCellEditing) {
         this.commitEditing();
         this.isCellEditing = false;
-        this.focusCanvas();
       }
       const height = this.selectionComputed.h;
       const width = this.selectionComputed.w;
@@ -141,12 +148,12 @@ new Vue({
       this.selection.y2 = nextline + height - 1;
 
       this.editingValue = this.editingItem ? this.editingItem.text : "";
+      this.editHere()
     },
     moveSelection(x, y) {
       if (this.isCellEditing) {
         this.commitEditing();
         this.isCellEditing = false;
-        this.focusCanvas();
       }
       this.selection.x1 = x;
       this.selection.y1 = y;
@@ -256,10 +263,12 @@ new Vue({
     focusInput() {
       this.$refs.hiddenInput.focus();
     },
-    focusCanvas() {
-      this.$refs.canvas.focus();
-    },
     commitEditing() {
+      if (this.editingValue === "") {
+        this.removeHere()
+        return
+      }
+
       if (this.editingItem) {
         this.editingItem.text = this.editingValue;
       } else {
@@ -283,7 +292,26 @@ new Vue({
           });
         }
       }
+    },
+    showTextField(selection) {
+      const input = hiddenInput;
+      input.style.opacity = 1;
+      input.style.left = selection.sx * gridSize + "px";
+      input.style.top = selection.sy * gridSize + "px";
+      isCellEditing = true;
+    },
+    hideTextField() {
+      const input = hiddenInput;
+      input.style.opacity = 0;
+      input.style.left = "-100px";
+      input.style.top = "-100px";
+      isCellEditing = false;
     }
   },
-  mounted() { }
+  mounted() {
+    handle = window.addEventListener("keydown", this.onKeyDown);
+  },
+  beforeDestroy() {
+    window.removeEventListener("keydown", handle);
+  }
 });

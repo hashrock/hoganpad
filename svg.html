@@ -91,11 +91,6 @@
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
-        @keydown.down.prevent="moveSelectionDown"
-        @keydown.up.prevent="moveSelectionUp"
-        @keydown.left.prevent="moveSelectionLeft"
-        @keydown.right.prevent="moveSelectionRight"
-        @keydown="onKeyDown"
         @dblclick="editHere"
       >
         <defs>
@@ -134,12 +129,15 @@
       <form @submit.prevent="moveNextLine">
         <input
           v-model="editingValue"
-          v-show="isCellEditing"
           class="hogan__hiddeninput"
           ref="hiddenInput"
           type="text"
           style="position: absolute; z-index: 100; top: -100px; left: -100px;"
           :style="inputPosition"
+          @keydown.down.prevent="moveSelectionDown"
+          @keydown.up.prevent="moveSelectionUp"
+          @keydown.left.prevent="moveSelectionLeft"
+          @keydown.right.prevent="moveSelectionRight"
         />
       </form>
     </div>
