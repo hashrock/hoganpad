@@ -13,6 +13,8 @@ const texts = [
   {
     x: 1,
     y: 1,
+    height: 1,
+    width: 1,
     type: "text",
     text: "Excel方眼紙だよ",
     style: "bold"
@@ -64,10 +66,14 @@ new Vue({
       return this.items.indexOf(this.editingItem);
     },
     editingItem() {
+      // 編集中アイテム
+      // カーソルがあれば自動的に編集中になる
       for (const item of this.items) {
         if (
-          item.x === this.selectionComputed.left &&
-          item.y === this.selectionComputed.top
+          item.x <= this.selection.x1 &&
+          this.selection.x1 <= item.x + item.width - 1 &&
+          item.y <= this.selection.y1 &&
+          this.selection.y1 <= item.y + item.height - 1
         ) {
           return item;
         }
@@ -147,6 +153,52 @@ new Vue({
 
       this.editingValue = this.editingItem ? this.editingItem.text : "";
     },
+    adjustSelectionAtEditingItem(){
+      this.selection.x1 = this.editingItem.x;
+      this.selection.y1 = this.editingItem.y;
+      this.selection.x2 = this.editingItem.x + this.editingItem.width - 1;
+      this.selection.y2 = this.editingItem.y + this.editingItem.height - 1;
+    },
+    moveSelectionUp(){
+      this.moveSelectionRelative(0, -1)
+      if(this.editingItem){
+        this.moveSelectionRelative(0, -this.editingItem.height + 1)
+      }
+      if(this.editingItem){
+        this.adjustSelectionAtEditingItem()
+      }
+    },
+    moveSelectionDown(){
+      // TODO: editingItemがある状態で下に動くと、editingItemのheight分動く
+      if(this.editingItem){
+        this.moveSelectionRelative(0, this.editingItem.height)
+      }else{
+        this.moveSelectionRelative(0, 1)
+      }
+      if(this.editingItem){
+        this.adjustSelectionAtEditingItem()
+      }
+    },
+    moveSelectionLeft(){
+      this.moveSelectionRelative(-1, 0)
+      if(this.editingItem){
+        this.moveSelectionRelative(-this.editingItem.width + 1, 0)
+      }
+      if(this.editingItem){
+        this.adjustSelectionAtEditingItem()
+      }
+    },
+    moveSelectionRight(){
+      // TODO: editingItemがある状態で右に動くと、editingItemのwidth分動く
+      if(this.editingItem){
+        this.moveSelectionRelative(this.editingItem.width, 0)
+      }else{
+        this.moveSelectionRelative(1, 0)
+      }
+      if(this.editingItem){
+        this.adjustSelectionAtEditingItem()
+      }
+    },
     moveSelectionRelative(x, y, event) {
       if (this.shiftDown) {
         this.moveSelectionEnd(this.selection.x1 + x, this.selection.y1 + y);
@@ -201,11 +253,13 @@ new Vue({
             type: "text",
             x: this.selectionComputed.left,
             y: this.selectionComputed.top,
+            width: 1,
+            height: 1,
             text: this.editingValue
           });
         }
       }
     }
   },
-  mounted() {}
+  mounted() { }
 });
