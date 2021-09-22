@@ -240,6 +240,7 @@ new Vue({
     },
     onPointerUp() {
       this.mouseDown = false;
+      this.focusInput()
     },
     onPointerDownTab(ev) {
       ev.target.setPointerCapture(ev.pointerId);
@@ -310,6 +311,7 @@ new Vue({
   },
   mounted() {
     handle = window.addEventListener("keydown", this.onKeyDown);
+    this.focusInput()
   },
   beforeDestroy() {
     window.removeEventListener("keydown", handle);
