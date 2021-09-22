@@ -47,7 +47,8 @@ new Vue({
       gridSize: gridSize,
       isCellEditing: false,
       editingValue: "",
-      tabOffset: null
+      tabOffset: null,
+      itemPreview: null
     };
   },
   computed: {
@@ -237,12 +238,19 @@ new Vue({
       ev.target.setPointerCapture(ev.pointerId);
       this.moveTarget = this.editingItem
       this.tabOffset = {x: ev.offsetX, y: ev.offsetY}
+      this.itemPreview = {...this.editingItem}
     },
     onPointerMoveTab(ev){
+      if(this.moveTarget){
+        this.itemPreview.x = this.moveTarget.x + Math.round((ev.offsetX - this.tabOffset.x) / 20 * 2) / 2
+        this.itemPreview.y = this.moveTarget.y +Math.round((ev.offsetY - this.tabOffset.y) / 20 * 2) / 2
+      }
     },
     onPointerUpTab(ev){
-      this.moveTarget.x += Math.round((ev.offsetX - this.tabOffset.x) / 20 * 2) / 2
-      this.moveTarget.y += Math.round((ev.offsetY - this.tabOffset.y) / 20 * 2) / 2
+      this.moveTarget.x = this.itemPreview.x
+      this.moveTarget.y = this.itemPreview.y
+      this.moveTarget = null
+      this.itemPreview = null
       this.tabOffset = null
     },
     focusInput() {

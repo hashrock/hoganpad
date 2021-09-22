@@ -60,6 +60,7 @@
         padding: 0 0 0 5px;
         margin: 0;
         border: none;
+        outline: none;
       }
       svg{
         outline: none;
@@ -67,6 +68,9 @@
       .selection__tab{
         fill: yellow;
         stroke: none;
+      }
+      .preview{
+        opacity: 0.5;
       }
     </style>
   </head>
@@ -125,6 +129,7 @@
           @pointerup.stop="onPointerUpTab"
         >
       </rect>
+      <hogan-item-box v-if="itemPreview" class="preview" :item="itemPreview" :grid-size="gridSize"></hogan-item-box>
       </svg>
       <form @submit.prevent="moveNextLine">
         <input
