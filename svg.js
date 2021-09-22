@@ -46,7 +46,8 @@ new Vue({
       items: texts,
       gridSize: gridSize,
       isCellEditing: false,
-      editingValue: ""
+      editingValue: "",
+      tabOffset: null
     };
   },
   computed: {
@@ -216,7 +217,10 @@ new Vue({
         Math.floor(e.offsetX / gridSize),
         Math.floor(e.offsetY / gridSize)
       );
-      this.mouseDown = true;
+      if(this.editingItem){
+        this.adjustSelectionAtEditingItem()
+      }
+      this.mouseDown = true
     },
     onPointerMove(e) {
       if (this.selectionMode) {
@@ -228,6 +232,18 @@ new Vue({
     },
     onPointerUp() {
       this.mouseDown = false;
+    },
+    onPointerDownTab(ev){
+      ev.target.setPointerCapture(ev.pointerId);
+      this.moveTarget = this.editingItem
+      this.tabOffset = {x: ev.offsetX, y: ev.offsetY}
+    },
+    onPointerMoveTab(ev){
+    },
+    onPointerUpTab(ev){
+      this.moveTarget.x += Math.round((ev.offsetX - this.tabOffset.x) / 20 * 2) / 2
+      this.moveTarget.y += Math.round((ev.offsetY - this.tabOffset.y) / 20 * 2) / 2
+      this.tabOffset = null
     },
     focusInput() {
       this.$refs.hiddenInput.focus();

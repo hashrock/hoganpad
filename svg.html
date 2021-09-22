@@ -64,6 +64,10 @@
       svg{
         outline: none;
       }
+      .selection__tab{
+        fill: yellow;
+        stroke: none;
+      }
     </style>
   </head>
   <body>
@@ -99,6 +103,18 @@
           ref="selection"
           :selection="selection"
         ></hogan-selection>
+        <rect
+          v-if="editingItem"
+          :x="selection.x1 * 20 - 15"
+          :y="selection.y1 * 20"
+          :height="25"
+          :width="15"
+          class="selection__tab"
+          @pointerdown.stop="onPointerDownTab"
+          @pointermove.stop="onPointerMoveTab"
+          @pointerup.stop="onPointerUpTab"
+        >
+      </rect>
       </svg>
       <form @submit.prevent="moveNextLine">
         <input
