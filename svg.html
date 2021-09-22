@@ -26,7 +26,7 @@
       line {
         stroke: #ddd;
       }
-      rect {
+      rect.box {
         stroke: black;
         fill: white;
       }
@@ -94,6 +94,16 @@
         @keydown="onKeyDown"
         @dblclick="editHere"
       >
+        <defs>
+          <filter id="dropshadow" x="0" y="0" width="200%" height="200%">
+            <feOffset result="offOut" in="SourceAlpha" dx="3" dy="3" />
+            <feGaussianBlur result="blurOut" in="offOut" stdDeviation="1" />
+            <feComponentTransfer in="blurOut" result="alphaOut">
+              <feFuncA type="linear" slope="0.5" />
+            </feComponentTransfer>
+            <feBlend in="SourceGraphic" in2="alphaOut" mode="normal" />
+          </filter>
+        </defs>      
         <hogan-grid :width="width" :height="height"></hogan-grid>
         <g v-for="item in items">
           <hogan-item-text :item="item" :grid-size="gridSize"></hogan-item-text>

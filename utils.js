@@ -122,6 +122,8 @@ Vue.component("hogan-item-box", {
       :y="(item.y) * gridSize + 0.5"
       :width="item.width * gridSize"
       :height="item.height * gridSize"
+      class="box"
+      :filter="filter"
     ></rect>
     <text
       dominant-baseline="central"
@@ -135,6 +137,11 @@ Vue.component("hogan-item-box", {
   `,
   props: ["item", "gridSize"],
   computed: {
+    filter(){
+      if(this.item.x !== (this.item.x | 0) || this.item.y !== (this.item.y | 0)){
+        return "url(#dropshadow)"
+      }
+    },
     anchorLeft() {
       return this.item.text.charAt(0) === ":";
     },
