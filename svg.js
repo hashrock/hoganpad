@@ -155,49 +155,49 @@ new Vue({
 
       this.editingValue = this.editingItem ? this.editingItem.text : "";
     },
-    adjustSelectionAtEditingItem(){
+    adjustSelectionAtEditingItem() {
       this.selection.x1 = this.editingItem.x;
       this.selection.y1 = this.editingItem.y;
       this.selection.x2 = this.editingItem.x + this.editingItem.width - 1;
       this.selection.y2 = this.editingItem.y + this.editingItem.height - 1;
     },
-    moveSelectionUp(){
+    moveSelectionUp() {
       this.moveSelectionRelative(0, -1)
-      if(this.editingItem){
+      if (this.editingItem) {
         this.moveSelectionRelative(0, -this.editingItem.height + 1)
       }
-      if(this.editingItem){
+      if (this.editingItem) {
         this.adjustSelectionAtEditingItem()
       }
     },
-    moveSelectionDown(){
+    moveSelectionDown() {
       // TODO: editingItemがある状態で下に動くと、editingItemのheight分動く
-      if(this.editingItem){
+      if (this.editingItem) {
         this.moveSelectionRelative(0, this.editingItem.height)
-      }else{
+      } else {
         this.moveSelectionRelative(0, 1)
       }
-      if(this.editingItem){
+      if (this.editingItem) {
         this.adjustSelectionAtEditingItem()
       }
     },
-    moveSelectionLeft(){
+    moveSelectionLeft() {
       this.moveSelectionRelative(-1, 0)
-      if(this.editingItem){
+      if (this.editingItem) {
         this.moveSelectionRelative(-this.editingItem.width + 1, 0)
       }
-      if(this.editingItem){
+      if (this.editingItem) {
         this.adjustSelectionAtEditingItem()
       }
     },
-    moveSelectionRight(){
+    moveSelectionRight() {
       // TODO: editingItemがある状態で右に動くと、editingItemのwidth分動く
-      if(this.editingItem){
+      if (this.editingItem) {
         this.moveSelectionRelative(this.editingItem.width, 0)
-      }else{
+      } else {
         this.moveSelectionRelative(1, 0)
       }
-      if(this.editingItem){
+      if (this.editingItem) {
         this.adjustSelectionAtEditingItem()
       }
     },
@@ -218,7 +218,7 @@ new Vue({
         Math.floor(e.offsetX / gridSize),
         Math.floor(e.offsetY / gridSize)
       );
-      if(this.editingItem){
+      if (this.editingItem) {
         this.adjustSelectionAtEditingItem()
       }
       this.mouseDown = true
@@ -234,19 +234,19 @@ new Vue({
     onPointerUp() {
       this.mouseDown = false;
     },
-    onPointerDownTab(ev){
+    onPointerDownTab(ev) {
       ev.target.setPointerCapture(ev.pointerId);
       this.moveTarget = this.editingItem
-      this.tabOffset = {x: ev.offsetX, y: ev.offsetY}
-      this.itemPreview = {...this.editingItem}
+      this.tabOffset = { x: ev.offsetX, y: ev.offsetY }
+      this.itemPreview = { ...this.editingItem }
     },
-    onPointerMoveTab(ev){
-      if(this.moveTarget){
+    onPointerMoveTab(ev) {
+      if (this.moveTarget) {
         this.itemPreview.x = this.moveTarget.x + Math.round((ev.offsetX - this.tabOffset.x) / 20 * 2) / 2
-        this.itemPreview.y = this.moveTarget.y +Math.round((ev.offsetY - this.tabOffset.y) / 20 * 2) / 2
+        this.itemPreview.y = this.moveTarget.y + Math.round((ev.offsetY - this.tabOffset.y) / 20 * 2) / 2
       }
     },
-    onPointerUpTab(ev){
+    onPointerUpTab(ev) {
       this.moveTarget.x = this.itemPreview.x
       this.moveTarget.y = this.itemPreview.y
       this.moveTarget = null
