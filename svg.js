@@ -10,7 +10,8 @@ let handle = null;
 function range(max) {
   return [...new Array(max).keys()];
 }
-const texts = [
+
+const examples = [
   {
     x: 1,
     y: 1,
@@ -44,7 +45,7 @@ new Vue({
       },
       mouseDown: false,
       shiftDown: false,
-      items: texts,
+      items: [],
       gridSize: gridSize,
       isCellEditing: false,
       editingValue: "",
@@ -130,6 +131,7 @@ new Vue({
       //TODO 範囲削除
       if (this.editingItemIndex >= 0) {
         this.items.splice(this.editingItemIndex, 1);
+        this.saveItems()
       }
       this.editingValue = "";
     },
@@ -265,6 +267,8 @@ new Vue({
       this.moveTarget = null
       this.itemPreview = null
       this.tabOffset = null
+
+      this.saveItems()
     },
     focusInput() {
       this.$refs.hiddenInput.focus();
@@ -279,25 +283,29 @@ new Vue({
         this.editingItem.text = this.editingValue;
       } else {
         if (this.selectionComputed.w > 1 || this.selectionComputed.h > 1) {
-          this.items.push({
+          this.addItem({
             type: "box",
             width: this.selectionComputed.w,
             height: this.selectionComputed.h,
             x: this.selectionComputed.left,
             y: this.selectionComputed.top,
             text: this.editingValue
-          });
+          })
         } else {
-          this.items.push({
+          this.addItem({
             type: "text",
             x: this.selectionComputed.left,
             y: this.selectionComputed.top,
             width: 1,
             height: 1,
             text: this.editingValue
-          });
+          })
         }
       }
+    },
+    addItem(item){
+      this.items.push(item)
+      this.saveItems()
     },
     showTextField(selection) {
       const input = hiddenInput;
@@ -312,9 +320,19 @@ new Vue({
       input.style.left = "-100px";
       input.style.top = "-100px";
       isCellEditing = false;
+    },
+    saveItems() {
+      window.localStorage.setItem("hoganpad__items", JSON.stringify(this.items));
     }
   },
   mounted() {
+    const items = window.localStorage.getItem("hoganpad__items", JSON.stringify(this.items));
+    if(items !== null) {
+      this.items = JSON.parse(items);
+    } else {
+      this.items = examples
+    }
+
     handle = window.addEventListener("keydown", this.onKeyDown);
     this.focusInput()
   },
