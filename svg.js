@@ -257,6 +257,11 @@ new Vue({
     onPointerUpTab(ev) {
       this.moveTarget.x = this.itemPreview.x
       this.moveTarget.y = this.itemPreview.y
+      this.selection.x1 = this.moveTarget.x
+      this.selection.y1 = this.moveTarget.y
+      this.selection.x2 = this.moveTarget.x + this.moveTarget.width - 1
+      this.selection.y2 = this.moveTarget.y + this.moveTarget.height - 1
+
       this.moveTarget = null
       this.itemPreview = null
       this.tabOffset = null

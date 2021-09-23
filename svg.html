@@ -66,8 +66,12 @@
         outline: none;
       }
       .selection__tab{
-        fill: yellow;
+        fill: green;
         stroke: none;
+        cursor: grab;
+      }
+      .selection__tab:active{
+        cursor: grabbing;
       }
       .preview{
         opacity: 0.5;
@@ -106,22 +110,22 @@
           <hogan-item-text :item="item" :grid-size="gridSize"></hogan-item-text>
           <hogan-item-box :item="item" :grid-size="gridSize"></hogan-item-box>
         </g>
-        <hogan-selection
-          ref="selection"
-          :selection="selection"
-        ></hogan-selection>
         <rect
           v-if="editingItem"
-          :x="selection.x1 * 20 - 15"
+          :x="selection.x1 * 20 - 10"
           :y="selection.y1 * 20"
           :height="25"
-          :width="15"
+          :width="10"
           class="selection__tab"
           @pointerdown.stop="onPointerDownTab"
           @pointermove.stop="onPointerMoveTab"
           @pointerup.stop="onPointerUpTab"
         >
       </rect>
+        <hogan-selection
+          ref="selection"
+          :selection="selection"
+        ></hogan-selection>
       <hogan-item-box v-if="itemPreview" class="preview" :item="itemPreview" :grid-size="gridSize"></hogan-item-box>
       </svg>
       <form @submit.prevent="moveNextLine">
