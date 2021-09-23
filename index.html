@@ -1,86 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Hoganshi</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>hoganpad</title>
     <style>
-        .hogan__hiddeninput {
-            line-height: 14px;
-            font-size: 14px;
-            border: none;
-            box-sizing: border-box;
-        }
-
-        .hogan__hiddeninput:focus {
-            outline: 0;
-        }
-
-        .a4 {
-            position: relative;
-            margin: 0 auto;
-            /* A4サイズに収まる最大のサイズ */
-            /* 96dpiで計算 */
-            /* 190mm * 270mm = 718px x 1020px */
-            /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
-            width: 700px;
-            height: 1020px;
-            box-sizing: border-box;
-            background: white;
-        }
-
+      body {
+        background: #eee;
+        display: flex;
+        justify-content: center;
+      }
+      .a4 {
+        position: relative;
+        margin: 0 auto;
+        /* A4サイズに収まる最大のサイズ */
+        /* 96dpiで計算 */
+        /* 190mm * 270mm = 718px x 1020px */
+        /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
+        width: 700px;
+        height: 1020px;
+        box-sizing: border-box;
+        background: white;
+      }
+      line {
+        stroke: #ddd;
+      }
+      rect.box {
+        stroke: black;
+        fill: white;
+      }
+      rect.selection {
+        stroke: green;
+        fill: rgba(255, 255, 255, 0.5);
+        stroke-width: 2;
+      }
+      @media print {
         body {
-            background: #EEE;
-            width: 190mm;
-            /* needed for Chrome */
+          margin: 0px;
+          background: white;
         }
-
-        @page {
-            size: A4;
-            margin: 10mm;
+        line {
+          stroke: none;
         }
-
-        @media print {
-            body {
-                margin: 0;
-            }
-            .hidden-print {
-                display: none;
-            }
-        }
+        rect.selection {
+          stroke: none;
+          fill: none;
+        }        
+      }
+      text {
+        user-select: none;
+      }
+      #app {
+        position: relative;
+      }
+      input {
+        font-size: 14px;
+        font-family: inherit;
+        padding: 0 0 0 5px;
+        margin: 0;
+        border: none;
+        outline: none;
+      }
+      svg{
+        outline: none;
+      }
+      .selection__tab{
+        fill: green;
+        stroke: none;
+        cursor: grab;
+      }
+      .selection__tab:active{
+        cursor: grabbing;
+      }
+      .preview{
+        opacity: 0.5;
+      }
     </style>
-</head>
-
-<body>
-    <div class="a4">
-        <canvas style="position: absolute;" width="700" height="1020">
-
-        </canvas>
-        <input class="hogan__hiddeninput" type="text" style="position: absolute; z-index: 100; opacity: 0.8; top: -100px; left: -100px;">
+  </head>
+  <body>
+    <div
+      id="app"
+      @keydown.16="shiftDown = true"
+      @keyup.16="shiftDown = false"
+    >
+      <svg
+        ref="canvas"
+        class="a4"
+        width="700"
+        height="1020"
+        viewBox="0 0 700 1020"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @dblclick="editHere"
+      >
+        <defs>
+          <filter id="dropshadow" x="0" y="0" width="200%" height="200%">
+            <feOffset result="offOut" in="SourceAlpha" dx="3" dy="3" />
+            <feGaussianBlur result="blurOut" in="offOut" stdDeviation="1" />
+            <feComponentTransfer in="blurOut" result="alphaOut">
+              <feFuncA type="linear" slope="0.5" />
+            </feComponentTransfer>
+            <feBlend in="SourceGraphic" in2="alphaOut" mode="normal" />
+          </filter>
+        </defs>      
+        <hogan-grid :width="width" :height="height"></hogan-grid>
+        <g v-for="item in items">
+          <hogan-item-text :item="item" :grid-size="gridSize"></hogan-item-text>
+          <hogan-item-box :item="item" :grid-size="gridSize"></hogan-item-box>
+        </g>
+        <rect
+          v-if="editingItem"
+          :x="selection.x1 * 20 - 10"
+          :y="selection.y1 * 20"
+          :height="25"
+          :width="10"
+          class="selection__tab"
+          @pointerdown.stop="onPointerDownTab"
+          @pointermove.stop="onPointerMoveTab"
+          @pointerup.stop="onPointerUpTab"
+        >
+      </rect>
+        <hogan-selection
+          ref="selection"
+          :selection="selection"
+        ></hogan-selection>
+      <hogan-item-box v-if="itemPreview" class="preview" :item="itemPreview" :grid-size="gridSize"></hogan-item-box>
+      </svg>
+      <form @submit.prevent="moveNextLine">
+        <input
+          v-model="editingValue"
+          class="hogan__hiddeninput"
+          ref="hiddenInput"
+          type="text"
+          style="position: absolute; z-index: 100; top: -100px; left: -100px;"
+          :style="inputPosition"
+          @keydown.down.prevent="moveSelectionDown"
+          @keydown.up.prevent="moveSelectionUp"
+          @keydown.left.prevent="moveSelectionLeft"
+          @keydown.right.prevent="moveSelectionRight"
+        />
+      </form>
     </div>
-
-    <div class="hidden-print">
-        <h3>できること</h3>
-        <ul>
-            <li>カーソルキー移動</li>
-            <li>マウス移動</li>
-            <li>F2編集</li>
-            <li>delete</li>
-            <li>選択範囲</li>
-        </ul>
-
-        <h3>できないこと</h3>
-        <ul>
-            <li>コピペ</li>
-            <li>行・列選択</li>
-            <li>数式</li>
-            <li>テキスト以外のセル型</li>
-            <li>スタイル</li>
-        </ul>
-
-    </div>
-    <script src="hogan.js"></script>
-
-</body>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
+    <script src="./utils.js"></script>
+    <script src="./svg.js"></script>
+  </body>
 </html>
