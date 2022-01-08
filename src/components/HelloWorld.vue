@@ -7,7 +7,6 @@ const gridX = Math.floor(width / gridSize);
 const gridY = Math.floor(height / gridSize);
 const selectionMode = false;
 let isCellModified = false;
-let handle: ((this: Window, ev: KeyboardEvent) => any) | null = null;
 let hiddenInput: null | HTMLInputElement = null;
 
 interface Item {
@@ -97,16 +96,17 @@ export default defineComponent({
           opacity: 0
         }
       }
+
+      // computed propertyが型推論されない？困った
       return {
+        // @ts-ignore
         top: `${this.selectionComputed.top * this.gridSize}px `,
+        // @ts-ignore
         left: `${this.selectionComputed.left * this.gridSize}px`,
       };
     },
     selectionComputed(): ComputedSelection {
       return computeSelection(this.selection);
-    },
-    editingItemIndex() {
-      return this.items.indexOf(this.editingItem);
     },
     editingItem(): Item | null {
       // 編集中アイテム
@@ -122,6 +122,13 @@ export default defineComponent({
         }
       }
       return null;
+    },
+    editingItemIndex() {
+      const items: Item[] = this.items;
+      // computed propertyが型推論されない？困った
+      // @ts-ignore
+      const editingItem = this.editingItem;
+      return items.indexOf(editingItem);
     }
   },
   methods: {
@@ -142,6 +149,7 @@ export default defineComponent({
           // this.moveNextLine();
           break;
         case 16: //shift
+          this.shiftDown = true;
           break;
         case 91: //ctrl
           break;
@@ -153,6 +161,13 @@ export default defineComponent({
           break;
       }
     },
+    onKeyUp(e: KeyboardEvent) {
+      switch (e.keyCode) {
+        case 16: //shift
+          this.shiftDown = false;
+          break;
+      }
+    },    
     editHere() {
       this.isCellEditing = true;
       this.$nextTick(() => {
@@ -389,19 +404,21 @@ export default defineComponent({
       this.items = examples
     }
 
-    // handle = window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("keyup", this.onKeyUp);
     this.focusInput()
 
     hiddenInput = this.$refs.hiddenInput as HTMLInputElement;
   },
   beforeDestroy() {
-    // window.removeEventListener("keydown", handle);
+    window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("keyup", this.onKeyUp);
   }
 })
 </script>
 
 <template>
-  <div id="app" @keydown.shift="shiftDown = true" @keyup.shift="shiftDown = false">
+  <div id="app">
     <svg
       ref="canvas"
       class="a4"
