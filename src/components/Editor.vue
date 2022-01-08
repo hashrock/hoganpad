@@ -56,7 +56,6 @@ interface Point {
 }
 
 export default defineComponent({
-  el: "#app",
   components: {
     HoganGrid,
     HoganItemBox,
@@ -96,13 +95,12 @@ export default defineComponent({
           opacity: 0
         }
       }
+      const selectionComputed = this.selectionComputed as ComputedSelection;
+      const gridSize = this.gridSize as number;
 
-      // computed propertyが型推論されない？困った
       return {
-        // @ts-ignore
-        top: `${this.selectionComputed.top * this.gridSize}px `,
-        // @ts-ignore
-        left: `${this.selectionComputed.left * this.gridSize}px`,
+        top: `${selectionComputed.top * gridSize}px `,
+        left: `${selectionComputed.left * gridSize}px`,
       };
     },
     selectionComputed(): ComputedSelection {
@@ -125,9 +123,7 @@ export default defineComponent({
     },
     editingItemIndex() {
       const items: Item[] = this.items;
-      // computed propertyが型推論されない？困った
-      // @ts-ignore
-      const editingItem = this.editingItem;
+      const editingItem = this.editingItem as Item;
       return items.indexOf(editingItem);
     }
   },
