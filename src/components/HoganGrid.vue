@@ -6,9 +6,10 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue";
 import { range } from "../utils"
 
-export default {
+export default defineComponent({
   props: ["width", "height"],
   computed: {
     vlines() {
@@ -18,5 +19,5 @@ export default {
       return range(this.height / 20).map(i => i * 20 + 0.5);
     }
   }
-}
+})
 </script>

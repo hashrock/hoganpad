@@ -3,9 +3,20 @@ export interface Selection {
   y1: number;
   x2: number;
   y2: number;
+  sx: number;
+  sy: number;
 }
 
-export function computeSelection(selection: Selection) {
+export interface ComputedSelection {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  w: number;
+  h: number;
+}
+
+export function computeSelection(selection: Selection): ComputedSelection {
   return {
     left: selection.x1 <= selection.x2 ? selection.x1 : selection.x2,
     top: selection.y1 <= selection.y2 ? selection.y1 : selection.y2,

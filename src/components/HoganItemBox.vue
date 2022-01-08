@@ -18,7 +18,9 @@
 </template>
 
 <script lang="ts">
-export default {
+import { defineComponent } from "vue";
+
+export default defineComponent({
   props: ["item", "gridSize"],
   computed: {
     filter() {
@@ -63,7 +65,7 @@ export default {
       return (this.item.x + this.item.width / 2) * this.gridSize;
     }
   }
-}
+})
 </script>
 
 <style>

@@ -1,5 +1,4 @@
 <script lang="ts">
-import { computeSelection } from "../utils";
 
 const height = 1020;
 const width = 700;
@@ -8,9 +7,22 @@ const gridX = Math.floor(width / gridSize);
 const gridY = Math.floor(height / gridSize);
 const selectionMode = false;
 let isCellModified = false;
-let handle: unknown = null;
+let handle: ((this: Window, ev: KeyboardEvent) => any) | null = null;
+let hiddenInput: null | HTMLInputElement = null;
 
-const examples = [
+interface Item {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text: string;
+  type: "text" | "box";
+  style? : string;
+}
+
+
+const examples: Item[] = [
   {
     id: 0,
     x: 1,
@@ -36,8 +48,15 @@ import HoganGrid from "./HoganGrid.vue";
 import HoganItemBox from "./HoganItemBox.vue";
 import HoganItemText from "./HoganItemText.vue";
 import HoganSelection from "./HoganSelection.vue";
+import { defineComponent } from "vue";
+import { Selection, ComputedSelection, computeSelection } from "../utils"
 
-export default {
+interface Point {
+  x: number
+  y: number
+}
+
+export default defineComponent({
   el: "#app",
   components: {
     HoganGrid,
@@ -54,15 +73,16 @@ export default {
         y1: 0,
         x2: 0,
         y2: 1
-      },
+      } as Selection,
       mouseDown: false,
       shiftDown: false,
-      items: [],
+      items: [] as Item[],
       gridSize: gridSize,
       isCellEditing: false,
       editingValue: "",
-      tabOffset: null,
-      itemPreview: null
+      tabOffset: null as Point | null,
+      itemPreview: null as Item | null,
+      moveTarget: null as Item | null,
     };
   },
   computed: {
@@ -82,13 +102,13 @@ export default {
         left: `${this.selectionComputed.left * this.gridSize}px`,
       };
     },
-    selectionComputed() {
+    selectionComputed(): ComputedSelection {
       return computeSelection(this.selection);
     },
     editingItemIndex() {
       return this.items.indexOf(this.editingItem);
     },
-    editingItem() {
+    editingItem(): Item | null {
       // 編集中アイテム
       // カーソルがあれば自動的に編集中になる
       for (const item of this.items) {
@@ -164,7 +184,7 @@ export default {
       this.editingValue = this.editingItem ? this.editingItem.text : "";
       this.editHere()
     },
-    moveSelection(x, y) {
+    moveSelection(x: number, y: number) {
       if (this.isCellEditing) {
         this.commitEditing();
         this.isCellEditing = false;
@@ -177,6 +197,9 @@ export default {
       this.editingValue = this.editingItem ? this.editingItem.text : "";
     },
     adjustSelectionAtEditingItem() {
+      if(this.editingItem == null){
+        return;
+      }
       this.selection.x1 = this.editingItem.x;
       this.selection.y1 = this.editingItem.y;
       this.selection.x2 = this.editingItem.x + this.editingItem.width - 1;
@@ -222,19 +245,20 @@ export default {
         this.adjustSelectionAtEditingItem()
       }
     },
-    moveSelectionRelative(x, y, event) {
+    moveSelectionRelative(x: number, y: number) {
       if (this.shiftDown) {
         this.moveSelectionEnd(this.selection.x1 + x, this.selection.y1 + y);
       } else {
         this.moveSelection(this.selection.x1 + x, this.selection.y1 + y);
       }
     },
-    moveSelectionEnd(x, y) {
+    moveSelectionEnd(x: number, y: number) {
       this.selection.x1 = x;
       this.selection.y1 = y;
     },
-    onPointerDown(e) {
-      e.target.setPointerCapture(e.pointerId);
+    onPointerDown(e: PointerEvent) {
+      const target = e.target as HTMLElement;
+      target.setPointerCapture(e.pointerId);
       this.moveSelection(
         Math.floor(e.offsetX / gridSize),
         Math.floor(e.offsetY / gridSize)
@@ -244,7 +268,7 @@ export default {
       }
       this.mouseDown = true
     },
-    onPointerMove(e) {
+    onPointerMove(e: PointerEvent) {
       if (this.selectionMode) {
         this.moveSelectionEnd(
           Math.floor(e.offsetX / gridSize),
@@ -256,25 +280,30 @@ export default {
       this.mouseDown = false;
       this.focusInput()
     },
-    onPointerDownTab(ev) {
-      ev.target.setPointerCapture(ev.pointerId);
+    onPointerDownTab(ev: PointerEvent) {
+      const target = ev.target as HTMLElement;
+      target.setPointerCapture(ev.pointerId);
       this.moveTarget = this.editingItem
       this.tabOffset = { x: ev.offsetX, y: ev.offsetY }
-      this.itemPreview = { ...this.editingItem }
+      if(this.editingItem){
+        this.itemPreview = { ...this.editingItem }
+      }
     },
-    onPointerMoveTab(ev) {
-      if (this.moveTarget) {
+    onPointerMoveTab(ev: PointerEvent) {
+      if (this.moveTarget && this.itemPreview && this.tabOffset) {
         this.itemPreview.x = this.moveTarget.x + Math.round((ev.offsetX - this.tabOffset.x) / 20 * 2) / 2
         this.itemPreview.y = this.moveTarget.y + Math.round((ev.offsetY - this.tabOffset.y) / 20 * 2) / 2
       }
     },
-    onPointerUpTab(ev) {
-      this.moveTarget.x = this.itemPreview.x
-      this.moveTarget.y = this.itemPreview.y
-      this.selection.x1 = this.moveTarget.x
-      this.selection.y1 = this.moveTarget.y
-      this.selection.x2 = this.moveTarget.x + this.moveTarget.width - 1
-      this.selection.y2 = this.moveTarget.y + this.moveTarget.height - 1
+    onPointerUpTab(ev: PointerEvent) {
+      if(this.moveTarget && this.itemPreview && this.tabOffset){
+        this.moveTarget.x = this.itemPreview.x
+        this.moveTarget.y = this.itemPreview.y
+        this.selection.x1 = this.moveTarget.x
+        this.selection.y1 = this.moveTarget.y
+        this.selection.x2 = this.moveTarget.x + this.moveTarget.width - 1
+        this.selection.y2 = this.moveTarget.y + this.moveTarget.height - 1
+      }
 
       this.moveTarget = null
       this.itemPreview = null
@@ -283,7 +312,8 @@ export default {
       this.saveItems()
     },
     focusInput() {
-      this.$refs.hiddenInput.focus();
+      const hiddenInput = this.$refs.hiddenInput as HTMLInputElement;
+      hiddenInput.focus();
     },
     commitEditing() {
       if (this.editingValue === "") {
@@ -294,8 +324,17 @@ export default {
       if (this.editingItem) {
         this.editingItem.text = this.editingValue;
       } else {
+        // get max items id
+        let maxId = 0;
+        for (const item of this.items) {
+          if (item.id > maxId) {
+            maxId = item.id;
+          }
+        }
+
         if (this.selectionComputed.w > 1 || this.selectionComputed.h > 1) {
           this.addItem({
+            id: maxId + 1,
             type: "box",
             width: this.selectionComputed.w,
             height: this.selectionComputed.h,
@@ -305,6 +344,7 @@ export default {
           })
         } else {
           this.addItem({
+            id: maxId + 1,
             type: "text",
             x: this.selectionComputed.left,
             y: this.selectionComputed.top,
@@ -315,43 +355,49 @@ export default {
         }
       }
     },
-    addItem(item) {
+    addItem(item: Item) {
       this.items.push(item)
       this.saveItems()
     },
-    showTextField(selection) {
+    showTextField(selection: Selection) {
       const input = hiddenInput;
-      input.style.opacity = 1;
-      input.style.left = selection.sx * gridSize + "px";
-      input.style.top = selection.sy * gridSize + "px";
-      isCellEditing = true;
+      if(input){
+        input.style.opacity = "1";
+        input.style.left = selection.sx * gridSize + "px";
+        input.style.top = selection.sy * gridSize + "px";
+      }
+      this.isCellEditing = true;
     },
     hideTextField() {
       const input = hiddenInput;
-      input.style.opacity = 0;
-      input.style.left = "-100px";
-      input.style.top = "-100px";
-      isCellEditing = false;
+      if(input){
+        input.style.opacity = "0";
+        input.style.left = "-100px";
+        input.style.top = "-100px";
+      }
+      this.isCellEditing = false;
     },
     saveItems() {
       window.localStorage.setItem("hoganpad__items", JSON.stringify(this.items));
     }
   },
   mounted() {
-    const items = window.localStorage.getItem("hoganpad__items", JSON.stringify(this.items));
+    const items = window.localStorage.getItem("hoganpad__items");
     if (items !== null) {
       this.items = JSON.parse(items);
     } else {
       this.items = examples
     }
 
-    handle = window.addEventListener("keydown", this.onKeyDown);
+    // handle = window.addEventListener("keydown", this.onKeyDown);
     this.focusInput()
+
+    hiddenInput = this.$refs.hiddenInput as HTMLInputElement;
   },
   beforeDestroy() {
-    window.removeEventListener("keydown", handle);
+    // window.removeEventListener("keydown", handle);
   }
-}
+})
 </script>
 
 <template>

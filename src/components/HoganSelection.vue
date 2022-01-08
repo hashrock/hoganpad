@@ -9,9 +9,11 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue";
+
 const gridSize = 20;
 
-export default {
+export default defineComponent({
   props: ["selection"],
   computed: {
     selectionWidth() {
@@ -37,7 +39,7 @@ export default {
       };
     }
   }
-}
+})
 </script>
 
 <style>
