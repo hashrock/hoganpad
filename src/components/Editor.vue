@@ -3,52 +3,17 @@
 const height = 1020;
 const width = 700;
 const gridSize = 20;
-const gridX = Math.floor(width / gridSize);
-const gridY = Math.floor(height / gridSize);
-const selectionMode = false;
-let isCellModified = false;
 let hiddenInput: null | HTMLInputElement = null;
-
-interface Item {
-  id: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  text: string;
-  type: "text" | "box";
-  style? : string;
-}
-
-
-const examples: Item[] = [
-  {
-    id: 0,
-    x: 1,
-    y: 1,
-    height: 1,
-    width: 1,
-    type: "text",
-    text: "Excel方眼紙だよ",
-    style: "bold"
-  },
-  {
-    id: 1,
-    x: 2,
-    y: 2,
-    type: "box",
-    width: 10,
-    height: 2,
-    text: "箱だよ"
-  }
-];
 
 import HoganGrid from "./HoganGrid.vue";
 import HoganItemBox from "./HoganItemBox.vue";
 import HoganItemText from "./HoganItemText.vue";
 import HoganSelection from "./HoganSelection.vue";
 import { defineComponent } from "vue";
-import { Selection, ComputedSelection, computeSelection } from "../utils"
+import { Selection, ComputedSelection } from "../logics/Selection"
+import { computeSelection } from "../logics/utils"
+import { examples } from "../logics/examples";
+import { Item } from "../logics/Item";
 
 interface Point {
   x: number

@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { range } from "../utils"
+import { range } from "../logics/utils"
 
 export default defineComponent({
   props: ["width", "height"],
