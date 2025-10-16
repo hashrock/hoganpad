@@ -1,0 +1,73 @@
+.a4 {
+  position: relative;
+  margin: 0 auto;
+  /* A4サイズに収まる最大のサイズ */
+  /* 96dpiで計算 */
+  /* 190mm * 270mm = 718px x 1020px */
+  /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
+  width: 700px;
+  height: 1020px;
+  box-sizing: border-box;
+  background: white;
+  outline: none;
+}
+
+line {
+  stroke: #ddd;
+}
+
+rect.box {
+  stroke: black;
+  fill: white;
+}
+
+rect.selection {
+  stroke: green;
+  fill: rgba(255, 255, 255, 0.5);
+  stroke-width: 2;
+}
+
+@media print {
+  body {
+    margin: 0px;
+    background: white;
+  }
+  line {
+    stroke: none;
+  }
+  rect.selection {
+    stroke: none;
+    fill: none;
+  }
+}
+
+text {
+  user-select: none;
+}
+
+#app {
+  position: relative;
+}
+
+input {
+  font-size: 14px;
+  font-family: inherit;
+  padding: 0 0 0 5px;
+  margin: 0;
+  border: none;
+  outline: none;
+}
+
+.selection__tab {
+  fill: green;
+  stroke: none;
+  cursor: grab;
+}
+
+.selection__tab:active {
+  cursor: grabbing;
+}
+
+.preview {
+  opacity: 0.5;
+}
