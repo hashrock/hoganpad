@@ -158,10 +158,8 @@ function App() {
   );
 
   const moveSelectionUp = useCallback(() => {
-    moveSelectionRelative(0, -1);
-    if (editingItem) {
-      moveSelectionRelative(0, -editingItem.height + 1);
-    }
+    const offset = editingItem ? -editingItem.height : -1;
+    moveSelectionRelative(0, offset);
     setTimeout(() => adjustSelectionAtEditingItem(), 0);
   }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
 
@@ -175,10 +173,8 @@ function App() {
   }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
 
   const moveSelectionLeft = useCallback(() => {
-    moveSelectionRelative(-1, 0);
-    if (editingItem) {
-      moveSelectionRelative(-editingItem.width + 1, 0);
-    }
+    const offset = editingItem ? -editingItem.width : -1;
+    moveSelectionRelative(offset, 0);
     setTimeout(() => adjustSelectionAtEditingItem(), 0);
   }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
 
