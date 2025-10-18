@@ -1,0 +1,55 @@
+body {
+  margin: 10px;
+  background: #eee;
+}
+
+#app {
+  position: relative;
+}
+
+.a4 {
+  position: relative;
+  margin: 0 auto;
+  /* A4サイズに収まる最大のサイズ */
+  /* 96dpiで計算 */
+  /* 190mm * 270mm = 718px x 1020px */
+  /* 方眼紙に合わせるため、20pxの倍数（700px）とする */
+  width: 700px;
+  height: 1020px;
+  box-sizing: border-box;
+  background: white;
+}
+
+line {
+  stroke: #ddd;
+}
+
+rect {
+  stroke: black;
+  fill: white;
+}
+
+rect.selection {
+  stroke: green;
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+text {
+  font-size: 14px;
+  user-select: none;
+}
+
+.hogan__hiddeninput {
+  position: absolute;
+  z-index: 100;
+}
+
+@media print {
+  body {
+    margin: 0px;
+    background: white;
+  }
+  line {
+    stroke: none;
+  }
+}
