@@ -159,37 +159,19 @@ function App() {
 
   const moveSelectionUp = useCallback(() => {
     moveSelectionRelative(0, -1);
-    if (editingItem) {
-      moveSelectionRelative(0, -editingItem.height + 1);
-    }
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
+  }, [moveSelectionRelative]);
 
   const moveSelectionDown = useCallback(() => {
-    if (editingItem) {
-      moveSelectionRelative(0, editingItem.height);
-    } else {
-      moveSelectionRelative(0, 1);
-    }
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
+    moveSelectionRelative(0, 1);
+  }, [moveSelectionRelative]);
 
   const moveSelectionLeft = useCallback(() => {
     moveSelectionRelative(-1, 0);
-    if (editingItem) {
-      moveSelectionRelative(-editingItem.width + 1, 0);
-    }
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
+  }, [moveSelectionRelative]);
 
   const moveSelectionRight = useCallback(() => {
-    if (editingItem) {
-      moveSelectionRelative(editingItem.width, 0);
-    } else {
-      moveSelectionRelative(1, 0);
-    }
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
+    moveSelectionRelative(1, 0);
+  }, [moveSelectionRelative]);
 
   const moveNextLine = useCallback(
     (e: FormEvent) => {
