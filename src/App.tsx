@@ -175,6 +175,22 @@ function App() {
     [editingItem, selection, shiftDown, moveSelection, moveSelectionEnd]
   );
 
+  const moveSelectionUp = useCallback(() => {
+    moveSelectionRelative(0, -1);
+  }, [moveSelectionRelative]);
+
+  const moveSelectionDown = useCallback(() => {
+    moveSelectionRelative(0, 1);
+  }, [moveSelectionRelative]);
+
+  const moveSelectionLeft = useCallback(() => {
+    moveSelectionRelative(-1, 0);
+  }, [moveSelectionRelative]);
+
+  const moveSelectionRight = useCallback(() => {
+    moveSelectionRelative(1, 0);
+  }, [moveSelectionRelative]);
+
   const moveNextLine = useCallback(
     (e: FormEvent) => {
       e.preventDefault();
