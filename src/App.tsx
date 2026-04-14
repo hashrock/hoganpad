@@ -118,7 +118,6 @@ function App() {
         commitEditing();
         setIsCellEditing(false);
       }
-      setSelection({ x1: x, y1: y, x2: x, y2: y });
       const item = items.find(
         (item) =>
           item.x <= x &&
@@ -126,7 +125,18 @@ function App() {
           item.y <= y &&
           y <= item.y + item.height - 1
       );
-      setEditingValue(item ? item.text : '');
+      if (item) {
+        setSelection({
+          x1: item.x,
+          y1: item.y,
+          x2: item.x + item.width - 1,
+          y2: item.y + item.height - 1,
+        });
+        setEditingValue(item.text);
+      } else {
+        setSelection({ x1: x, y1: y, x2: x, y2: y });
+        setEditingValue('');
+      }
     },
     [isCellEditing, commitEditing, items]
   );
@@ -135,51 +145,35 @@ function App() {
     setSelection((prev) => ({ ...prev, x1: x, y1: y }));
   }, []);
 
-  const adjustSelectionAtEditingItem = useCallback(() => {
-    if (editingItem) {
-      setSelection({
-        x1: editingItem.x,
-        y1: editingItem.y,
-        x2: editingItem.x + editingItem.width - 1,
-        y2: editingItem.y + editingItem.height - 1,
-      });
-    }
-  }, [editingItem]);
-
-  const moveSelectionRelative = useCallback(
-    (x: number, y: number) => {
-      if (shiftDown) {
-        moveSelectionEnd(selection.x1 + x, selection.y1 + y);
+  const moveSelectionArrow = useCallback(
+    (dx: number, dy: number) => {
+      let nx: number;
+      let ny: number;
+      if (editingItem) {
+        nx =
+          dx > 0
+            ? editingItem.x + editingItem.width
+            : dx < 0
+              ? editingItem.x - 1
+              : selection.x1;
+        ny =
+          dy > 0
+            ? editingItem.y + editingItem.height
+            : dy < 0
+              ? editingItem.y - 1
+              : selection.y1;
       } else {
-        moveSelection(selection.x1 + x, selection.y1 + y);
+        nx = selection.x1 + dx;
+        ny = selection.y1 + dy;
+      }
+      if (shiftDown) {
+        moveSelectionEnd(nx, ny);
+      } else {
+        moveSelection(nx, ny);
       }
     },
-    [shiftDown, selection, moveSelection, moveSelectionEnd]
+    [editingItem, selection, shiftDown, moveSelection, moveSelectionEnd]
   );
-
-  const moveSelectionUp = useCallback(() => {
-    const offset = editingItem ? -editingItem.height : -1;
-    moveSelectionRelative(0, offset);
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
-
-  const moveSelectionDown = useCallback(() => {
-    const offset = editingItem ? editingItem.height : 1;
-    moveSelectionRelative(0, offset);
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
-
-  const moveSelectionLeft = useCallback(() => {
-    const offset = editingItem ? -editingItem.width : -1;
-    moveSelectionRelative(offset, 0);
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
-
-  const moveSelectionRight = useCallback(() => {
-    const offset = editingItem ? editingItem.width : 1;
-    moveSelectionRelative(offset, 0);
-    setTimeout(() => adjustSelectionAtEditingItem(), 0);
-  }, [moveSelectionRelative, editingItem, adjustSelectionAtEditingItem]);
 
   const moveNextLine = useCallback(
     (e: FormEvent) => {
@@ -218,10 +212,9 @@ function App() {
       const x = Math.floor(e.nativeEvent.offsetX / GRID_SIZE);
       const y = Math.floor(e.nativeEvent.offsetY / GRID_SIZE);
       moveSelection(x, y);
-      setTimeout(() => adjustSelectionAtEditingItem(), 0);
       setMouseDown(true);
     },
-    [moveSelection, adjustSelectionAtEditingItem]
+    [moveSelection]
   );
 
   const onPointerMove = useCallback(
@@ -415,16 +408,16 @@ function App() {
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') {
               e.preventDefault();
-              moveSelectionDown();
+              moveSelectionArrow(0, 1);
             } else if (e.key === 'ArrowUp') {
               e.preventDefault();
-              moveSelectionUp();
+              moveSelectionArrow(0, -1);
             } else if (e.key === 'ArrowLeft') {
               e.preventDefault();
-              moveSelectionLeft();
+              moveSelectionArrow(-1, 0);
             } else if (e.key === 'ArrowRight') {
               e.preventDefault();
-              moveSelectionRight();
+              moveSelectionArrow(1, 0);
             }
           }}
         />
