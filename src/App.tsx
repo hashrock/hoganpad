@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { HoganGrid } from './components/HoganGrid';
 import { HoganSelection } from './components/HoganSelection';
-import { Item, Selection, SelectionComputed } from './types';
+import { BoxItem, Item, Selection, SelectionComputed } from './types';
 import './App.css';
 
 const CANVAS_WIDTH = 700;
@@ -123,9 +123,27 @@ function App() {
         setIsCellEditing(false);
         focusCanvas();
       }
-      setSelection({ x1: x, y1: y, x2: x, y2: y });
-      const item = items.find((item) => item.x === x && item.y === y);
-      setEditingValue(item ? item.text : '');
+      const box = items.find(
+        (it): it is BoxItem =>
+          it.type === 'box' &&
+          it.x <= x &&
+          x <= it.x + it.width - 1 &&
+          it.y <= y &&
+          y <= it.y + it.height - 1
+      );
+      if (box) {
+        setSelection({
+          x1: box.x,
+          y1: box.y,
+          x2: box.x + box.width - 1,
+          y2: box.y + box.height - 1,
+        });
+        setEditingValue(box.text);
+      } else {
+        setSelection({ x1: x, y1: y, x2: x, y2: y });
+        const textItem = items.find((it) => it.x === x && it.y === y);
+        setEditingValue(textItem ? textItem.text : '');
+      }
     },
     [isCellEditing, commitEditing, focusCanvas, items]
   );
@@ -143,6 +161,42 @@ function App() {
       }
     },
     [shiftDown, selection, moveSelection]
+  );
+
+  const moveSelectionArrow = useCallback(
+    (dx: number, dy: number) => {
+      const { x1, y1 } = selection;
+      const containingBox = items.find(
+        (i): i is BoxItem =>
+          i.type === 'box' &&
+          i.x <= x1 &&
+          x1 <= i.x + i.width - 1 &&
+          i.y <= y1 &&
+          y1 <= i.y + i.height - 1
+      );
+      if (!containingBox) {
+        moveSelectionRelative(dx, dy);
+        return;
+      }
+      const nx =
+        dx > 0
+          ? containingBox.x + containingBox.width
+          : dx < 0
+            ? containingBox.x - 1
+            : x1;
+      const ny =
+        dy > 0
+          ? containingBox.y + containingBox.height
+          : dy < 0
+            ? containingBox.y - 1
+            : y1;
+      if (shiftDown) {
+        setSelection((prev) => ({ ...prev, x1: nx, y1: ny }));
+      } else {
+        moveSelection(nx, ny);
+      }
+    },
+    [selection, items, shiftDown, moveSelection, moveSelectionRelative]
   );
 
   const moveSelectionEnd = useCallback((x: number, y: number) => {
@@ -195,19 +249,19 @@ function App() {
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault();
-          moveSelectionRelative(-1, 0);
+          moveSelectionArrow(-1, 0);
           break;
         case 'ArrowUp':
           e.preventDefault();
-          moveSelectionRelative(0, -1);
+          moveSelectionArrow(0, -1);
           break;
         case 'ArrowRight':
           e.preventDefault();
-          moveSelectionRelative(1, 0);
+          moveSelectionArrow(1, 0);
           break;
         case 'ArrowDown':
           e.preventDefault();
-          moveSelectionRelative(0, 1);
+          moveSelectionArrow(0, 1);
           break;
         case 'Delete':
           e.preventDefault();
@@ -230,7 +284,7 @@ function App() {
           break;
       }
     },
-    [moveSelectionRelative, removeHere, editHere]
+    [moveSelectionArrow, removeHere, editHere]
   );
 
   const onKeyUp = useCallback((e: React.KeyboardEvent<SVGSVGElement>) => {
