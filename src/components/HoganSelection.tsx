@@ -1,4 +1,4 @@
-import { Selection } from '../types';
+import { Selection, getSelectionRect } from '../editor';
 
 interface HoganSelectionProps {
   selection: Selection;
@@ -6,15 +6,12 @@ interface HoganSelectionProps {
 }
 
 export function HoganSelection({ selection, gridSize = 20 }: HoganSelectionProps) {
-  const x = selection.x1 <= selection.x2 ? selection.x1 : selection.x2;
-  const y = selection.y1 <= selection.y2 ? selection.y1 : selection.y2;
-  const w = Math.abs(selection.x1 - selection.x2) + 1;
-  const h = Math.abs(selection.y1 - selection.y2) + 1;
+  const { left, top, w, h } = getSelectionRect(selection);
 
   return (
     <rect
-      x={x * gridSize + 0.5}
-      y={y * gridSize + 0.5}
+      x={left * gridSize + 0.5}
+      y={top * gridSize + 0.5}
       width={w * gridSize}
       height={h * gridSize}
       className="selection"
