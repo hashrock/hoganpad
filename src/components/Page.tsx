@@ -1,11 +1,11 @@
-import { ClipboardEvent, Dispatch, KeyboardEvent, PointerEvent, RefObject, useRef, useState } from 'react';
+import { ClipboardEvent, Dispatch, KeyboardEvent, memo, PointerEvent, RefObject, useRef, useState } from 'react';
 import {
   Action,
   CLIPBOARD_MIME,
   copyFrames,
   currentRect,
-  defaultStyle,
   deserializeFrames,
+  editorReducer,
   editTarget,
   EditorState,
   frameIndexAt,
@@ -14,13 +14,23 @@ import {
   keyToAction,
   selectedIndices,
   serializeFrames,
+  targetStyle,
 } from '../editor';
-import { gridSize, MARGIN_MM, paperSize } from '../model/doc';
-import { Point, Rect, union } from '../model/rect';
+import { Frame, gridSize, MARGIN_MM, paperSize } from '../model/doc';
+import { cellRect, Point } from '../model/rect';
 import { frameCss, rectCss, textCss } from './frameCss';
 
 /** マウスドラッグ中の操作。move / resize は離すまでゴーストだけ動かし、離した時に 1 回で確定する。 */
 type Drag = { kind: 'select' } | { kind: 'move' | 'resize'; start: Point; delta: Point };
+
+/** 未変更のフレームは reducer が同一オブジェクトのまま保つので、memo で再描画を省ける。 */
+const FrameView = memo(function FrameView({ frame, cellMm }: { frame: Frame; cellMm: number }) {
+  return (
+    <div className="frame" style={frameCss(frame.style, frame.rect, cellMm)}>
+      <span className="frame-text">{frame.text}</span>
+    </div>
+  );
+});
 
 interface Props {
   state: EditorState;
@@ -40,7 +50,7 @@ export function Page({ state, dispatch, inputRef }: Props) {
   const selRect = currentRect(state);
   const selected = selectedIndices(state);
   const target = editTarget(state);
-  const targetStyle = frames[target.index]?.style ?? defaultStyle(target.rect);
+  const inputStyle = targetStyle(state);
 
   function cellAt(e: PointerEvent): Point {
     const r = gridRef.current!.getBoundingClientRect();
@@ -75,7 +85,8 @@ export function Page({ state, dispatch, inputRef }: Props) {
         dispatch({ type: 'select', point: p, extend: true });
       }
     } else {
-      setDrag({ ...drag, delta: { x: p.x - drag.start.x, y: p.y - drag.start.y } });
+      const delta = { x: p.x - drag.start.x, y: p.y - drag.start.y };
+      if (delta.x !== drag.delta.x || delta.y !== drag.delta.y) setDrag({ ...drag, delta });
     }
   }
 
@@ -128,16 +139,16 @@ export function Page({ state, dispatch, inputRef }: Props) {
     });
   }
 
-  let ghost: Rect | null = null;
-  if (drag?.kind === 'move' && selected.length > 0) {
-    const box = selected.map((i) => frames[i].rect).reduce(union);
-    ghost = { ...box, x: box.x + drag.delta.x, y: box.y + drag.delta.y };
-  } else if (drag?.kind === 'resize') {
-    ghost = { ...selRect, w: Math.max(1, selRect.w + drag.delta.x), h: Math.max(1, selRect.h + drag.delta.y) };
-  }
+  // ゴーストは離したときに dispatch する操作を reducer で先取りした結果をそのまま表示する
+  const ghost =
+    drag?.kind === 'move'
+      ? currentRect(editorReducer(state, { type: 'moveFrames', dx: drag.delta.x, dy: drag.delta.y }))
+      : drag?.kind === 'resize'
+        ? currentRect(editorReducer(state, { type: 'resizeFrames', dw: drag.delta.x, dh: drag.delta.y }))
+        : null;
 
   // 非編集時も入力欄はアクティブセル上に透明で置き、そのまま打ち始められるようにする（IME 対応）
-  const inputRect = editing ? target.rect : { ...selection.focus, w: 1, h: 1 };
+  const inputRect = editing ? target.rect : cellRect(selection.focus);
 
   return (
     <div className="paper" style={{ width: `${paper.w}mm`, height: `${paper.h}mm`, padding: `${MARGIN_MM}mm` }}>
@@ -156,9 +167,7 @@ export function Page({ state, dispatch, inputRef }: Props) {
         onDoubleClick={() => !editing && dispatch({ type: 'startEdit' })}
       >
         {frames.map((f, i) => (
-          <div key={i} className="frame" style={frameCss(f.style, f.rect, cellMm)}>
-            <span className="frame-text">{f.text}</span>
-          </div>
+          <FrameView key={i} frame={f} cellMm={cellMm} />
         ))}
         <div className="selection screen-only" style={rectCss(selRect, cellMm)}>
           {selected.length > 0 && !editing && <div className="handle" data-handle="1" />}
@@ -171,8 +180,8 @@ export function Page({ state, dispatch, inputRef }: Props) {
             ...rectCss(inputRect, cellMm),
             // 編集欄は内容に合わせて伸びる（折り返し有りなら幅は枠に固定）
             ...(editing && {
-              ...textCss(targetStyle, cellMm),
-              ...(!targetStyle.wrap && { width: 'auto' }),
+              ...textCss(inputStyle, cellMm),
+              ...(!inputStyle.wrap && { width: 'auto' }),
               height: 'auto',
             }),
             minWidth: `${inputRect.w * cellMm}mm`,

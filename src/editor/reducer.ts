@@ -1,9 +1,11 @@
 import { AREA_STYLE, BOX_STYLE, Doc, Frame, gridSize, isBlank, Style, TEXT_STYLE } from '../model/doc';
-import { clamp, Rect, union } from '../model/rect';
+import { boundingRect, cellRect, clamp, Rect, translate } from '../model/rect';
 import {
   cellSelection,
+  clampToGrid,
   frameIndexAt,
   frameIndicesIn,
+  Grid,
   rectSelection,
   Selection,
   selectionRect,
@@ -13,20 +15,12 @@ import { Action, createState, EditorState } from './state';
 
 const HISTORY_LIMIT = 200;
 
-type Grid = { cols: number; rows: number };
-
 export function currentRect(state: EditorState): Rect {
   return selectionRect(state.selection, state.doc.frames);
 }
 
 export function selectedIndices(state: EditorState): number[] {
   return frameIndicesIn(state.doc.frames, currentRect(state));
-}
-
-/** アクティブセルのフレーム、なければ選択中の最前面フレーム。ツールバー表示の基準。 */
-export function activeFrame(state: EditorState): Frame | undefined {
-  const { frames } = state.doc;
-  return frames[frameIndexAt(frames, state.selection.focus)] ?? frames[selectedIndices(state).at(-1) ?? -1];
 }
 
 /**
@@ -39,12 +33,17 @@ export function editTarget(state: EditorState): { index: number; rect: Rect } {
   const index = frameIndexAt(frames, focus);
   if (index >= 0) return { index, rect: frames[index].rect };
   const rect = currentRect(state);
-  if (frameIndicesIn(frames, rect).length === 0) return { index, rect };
-  return { index, rect: { ...focus, w: 1, h: 1 } };
+  return { index, rect: frameIndicesIn(frames, rect).length === 0 ? rect : cellRect(focus) };
 }
 
 export function defaultStyle(rect: Rect): Style {
   return rect.w === 1 && rect.h === 1 ? TEXT_STYLE : AREA_STYLE;
+}
+
+/** 入力の行き先のスタイル（新規なら作られるフレームの既定値）。ツールバーと編集欄の表示に使う。 */
+export function targetStyle(state: EditorState): Style {
+  const { index, rect } = editTarget(state);
+  return state.doc.frames[index]?.style ?? defaultStyle(rect);
 }
 
 /** ページからはみ出さないよう位置とサイズを詰める。 */
@@ -54,8 +53,16 @@ function fitRect(r: Rect, grid: Grid): Rect {
   return { x: clamp(r.x, 0, grid.cols - w), y: clamp(r.y, 0, grid.rows - h), w, h };
 }
 
-function boundingRect(rects: Rect[]): Rect {
-  return rects.reduce(union);
+/** 選択中のフレームとそれ以外に分ける。選択が空なら null。 */
+function partitionSelected(state: EditorState) {
+  const indices = new Set(selectedIndices(state));
+  if (indices.size === 0) return null;
+  const { frames } = state.doc;
+  return {
+    has: (i: number) => indices.has(i),
+    picked: frames.filter((_, i) => indices.has(i)),
+    rest: frames.filter((_, i) => !indices.has(i)),
+  };
 }
 
 /** ドキュメントを差し替え、変更があれば undo 履歴に積む。 */
@@ -90,29 +97,25 @@ function commit(state: EditorState): EditorState {
 
 /** 選択中のフレームの矩形を変換し、選択を変換後のフレームに合わせる。 */
 function transformSelected(state: EditorState, fn: (r: Rect) => Rect): EditorState {
-  const indices = new Set(selectedIndices(state));
-  if (indices.size === 0) return state;
-  const frames = state.doc.frames.map((f, i) => (indices.has(i) ? { ...f, rect: fn(f.rect) } : f));
-  const moved = frames.filter((_, i) => indices.has(i)).map((f) => f.rect);
+  const sel = partitionSelected(state);
+  if (!sel) return state;
+  const frames = state.doc.frames.map((f, i) => (sel.has(i) ? { ...f, rect: fn(f.rect) } : f));
+  const moved = frames.filter((_, i) => sel.has(i)).map((f) => f.rect);
   return withFrames(state, frames, rectSelection(boundingRect(moved)));
 }
 
 function setStyle(state: EditorState, style: Partial<Style>): EditorState {
-  const indices = new Set(selectedIndices(state));
+  const sel = partitionSelected(state);
   const { frames } = state.doc;
-  if (indices.size === 0) {
+  if (!sel) {
     // Excel で空のセルに書式を付けるのと同じく、選択範囲に書式だけのフレームを作る
     const rect = currentRect(state);
     return withFrames(state, [...frames, { rect, text: '', style: { ...defaultStyle(rect), ...style } }]);
   }
   return withFrames(
     state,
-    frames.map((f, i) => (indices.has(i) ? { ...f, style: { ...f.style, ...style } } : f)),
+    frames.map((f, i) => (sel.has(i) ? { ...f, style: { ...f.style, ...style } } : f)),
   );
-}
-
-function clampPoint(p: { x: number; y: number }, grid: Grid) {
-  return { x: clamp(p.x, 0, grid.cols - 1), y: clamp(p.y, 0, grid.rows - 1) };
 }
 
 function reduce(state: EditorState, action: Action): EditorState {
@@ -121,13 +124,13 @@ function reduce(state: EditorState, action: Action): EditorState {
 
   switch (action.type) {
     case 'select': {
-      const point = clampPoint(action.point, grid);
+      const point = clampToGrid(action.point, grid);
       const selection = action.extend ? { ...state.selection, focus: point } : cellSelection(point);
       return { ...state, selection };
     }
 
     case 'selectAll':
-      return { ...state, selection: { anchor: { x: 0, y: 0 }, focus: { x: grid.cols - 1, y: grid.rows - 1 } } };
+      return { ...state, selection: rectSelection({ x: 0, y: 0, w: grid.cols, h: grid.rows }) };
 
     case 'move': {
       const focus = step(frames, state.selection.focus, action.dx, action.dy, grid);
@@ -147,47 +150,38 @@ function reduce(state: EditorState, action: Action): EditorState {
     case 'updateEdit':
       return state.editing ? { ...state, editing: { ...state.editing, value: action.value } } : state;
 
-    case 'commitEdit':
-      return state; // 確定は reducer 冒頭の commit が行う
-
     case 'cancelEdit':
       return { ...state, editing: null };
 
     case 'delete': {
-      const indices = new Set(selectedIndices(state));
-      if (indices.size === 0) return state;
-      return withFrames(state, frames.filter((_, i) => !indices.has(i)));
+      const sel = partitionSelected(state);
+      return sel ? withFrames(state, sel.rest) : state;
     }
 
     case 'merge': {
       const rect = currentRect(state);
-      const indices = new Set(selectedIndices(state));
-      const text = frames
-        .filter((_, i) => indices.has(i))
+      const sel = partitionSelected(state);
+      const text = (sel?.picked ?? [])
         .map((f) => f.text)
         .filter(Boolean)
         .join('\n');
-      return withFrames(
-        state,
-        [...frames.filter((_, i) => !indices.has(i)), { rect, text, style: BOX_STYLE }],
-        rectSelection(rect),
-      );
+      return withFrames(state, [...(sel?.rest ?? frames), { rect, text, style: BOX_STYLE }], rectSelection(rect));
     }
 
     case 'setStyle':
       return setStyle(state, action.style);
 
     case 'toggleStyle':
-      return setStyle(state, { [action.key]: !(activeFrame(state)?.style[action.key] ?? false) });
+      return setStyle(state, { [action.key]: !targetStyle(state)[action.key] });
 
     case 'moveFrames': {
-      const indices = selectedIndices(state);
-      if (indices.length === 0) return state;
-      const box = boundingRect(indices.map((i) => frames[i].rect));
+      const sel = partitionSelected(state);
+      if (!sel) return state;
+      const box = boundingRect(sel.picked.map((f) => f.rect));
       const dx = clamp(action.dx, -box.x, grid.cols - box.x - box.w);
       const dy = clamp(action.dy, -box.y, grid.rows - box.y - box.h);
       if (dx === 0 && dy === 0) return state;
-      return transformSelected(state, (r) => ({ ...r, x: r.x + dx, y: r.y + dy }));
+      return transformSelected(state, (r) => translate(r, dx, dy));
     }
 
     case 'resizeFrames':
@@ -198,20 +192,15 @@ function reduce(state: EditorState, action: Action): EditorState {
       }));
 
     case 'reorder': {
-      const indices = new Set(selectedIndices(state));
-      if (indices.size === 0) return state;
-      const picked = frames.filter((_, i) => indices.has(i));
-      const rest = frames.filter((_, i) => !indices.has(i));
-      return withFrames(state, action.to === 'front' ? [...rest, ...picked] : [...picked, ...rest]);
+      const sel = partitionSelected(state);
+      if (!sel) return state;
+      return withFrames(state, action.to === 'front' ? [...sel.rest, ...sel.picked] : [...sel.picked, ...sel.rest]);
     }
 
     case 'paste': {
       if (action.frames.length === 0) return state;
       const origin = currentRect(state);
-      const pasted = action.frames.map((f) => ({
-        ...f,
-        rect: fitRect({ ...f.rect, x: f.rect.x + origin.x, y: f.rect.y + origin.y }, grid),
-      }));
+      const pasted = action.frames.map((f) => ({ ...f, rect: fitRect(translate(f.rect, origin.x, origin.y), grid) }));
       return withFrames(state, [...frames, ...pasted], rectSelection(boundingRect(pasted.map((f) => f.rect))));
     }
 
@@ -219,7 +208,7 @@ function reduce(state: EditorState, action: Action): EditorState {
       const page = { ...state.doc.page, ...action.page };
       const nextGrid = gridSize(page);
       const doc = { page, frames: frames.map((f) => ({ ...f, rect: fitRect(f.rect, nextGrid) })) };
-      return { ...withDoc(state, doc), selection: cellSelection(clampPoint(state.selection.focus, nextGrid)) };
+      return { ...withDoc(state, doc), selection: cellSelection(clampToGrid(state.selection.focus, nextGrid)) };
     }
 
     case 'load':

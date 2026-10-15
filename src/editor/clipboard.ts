@@ -1,15 +1,15 @@
 import { Frame, parseDoc, TEXT_STYLE } from '../model/doc';
-import { Rect } from '../model/rect';
+import { Rect, translate } from '../model/rect';
 import { frameIndicesIn } from './selection';
 
 export const CLIPBOARD_MIME = 'application/x-hoganpad+json';
 
 /** 範囲内のフレームを、範囲の左上を (0,0) とする座標で取り出す。 */
 export function copyFrames(frames: Frame[], rect: Rect): Frame[] {
-  return frameIndicesIn(frames, rect).map((i) => {
-    const f = frames[i];
-    return { ...f, rect: { ...f.rect, x: f.rect.x - rect.x, y: f.rect.y - rect.y } };
-  });
+  return frameIndicesIn(frames, rect).map((i) => ({
+    ...frames[i],
+    rect: translate(frames[i].rect, -rect.x, -rect.y),
+  }));
 }
 
 export function serializeFrames(frames: Frame[]): string {

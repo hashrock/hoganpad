@@ -47,8 +47,16 @@ export function union(a: Rect, b: Rect): Rect {
   };
 }
 
-export function rectEquals(a: Rect, b: Rect): boolean {
-  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
+export function boundingRect(rects: Rect[]): Rect {
+  return rects.reduce(union);
+}
+
+export function translate(r: Rect, dx: number, dy: number): Rect {
+  return { ...r, x: r.x + dx, y: r.y + dy };
+}
+
+export function cellRect(p: Point): Rect {
+  return { ...p, w: 1, h: 1 };
 }
 
 export function clamp(v: number, min: number, max: number): number {

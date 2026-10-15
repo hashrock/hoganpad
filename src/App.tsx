@@ -1,8 +1,8 @@
 import { useEffect, useReducer, useRef } from 'react';
 import { Page } from './components/Page';
 import { Toolbar } from './components/Toolbar';
-import { Action, activeFrame, createState, currentRect, editorReducer } from './editor';
-import { Doc, parseDoc, SAMPLE_DOC, TEXT_STYLE } from './model/doc';
+import { Action, createState, currentRect, editorReducer, targetStyle } from './editor';
+import { Doc, parseDoc, SAMPLE_DOC } from './model/doc';
 
 const STORAGE_KEY = 'hoganpad:doc';
 
@@ -57,7 +57,7 @@ export default function App() {
       {/* 印刷時の用紙サイズを紙面の向きに合わせる */}
       <style>{`@page { size: A4 ${doc.page.orientation}; margin: 0; }`}</style>
       <Toolbar
-        style={activeFrame(state)?.style ?? TEXT_STYLE}
+        style={targetStyle(state)}
         page={doc.page}
         selection={currentRect(state)}
         canUndo={state.past.length > 0}

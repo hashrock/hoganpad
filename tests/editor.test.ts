@@ -91,7 +91,7 @@ describe('入力', () => {
     const s = run(
       { ...stateWith([]), selection: rectSelection({ x: 1, y: 1, w: 4, h: 3 }) },
       { type: 'startEdit', value: '文' },
-      { type: 'commitEdit' },
+      move(0, 1),
     );
     expect(s.doc.frames[0].rect).toEqual({ x: 1, y: 1, w: 4, h: 3 });
     expect(s.doc.frames[0].style.wrap).toBe(true);
@@ -106,7 +106,7 @@ describe('入力', () => {
 
   it('文字も装飾もなくなったフレームは消える', () => {
     const plain = { rect: { x: 0, y: 0, w: 1, h: 1 }, text: 'a', style: TEXT_STYLE };
-    const s = run(stateWith([plain]), { type: 'startEdit' }, { type: 'updateEdit', value: '' }, { type: 'commitEdit' });
+    const s = run(stateWith([plain]), { type: 'startEdit' }, { type: 'updateEdit', value: '' }, move(0, 1));
     expect(s.doc.frames).toEqual([]);
   });
 

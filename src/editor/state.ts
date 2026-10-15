@@ -30,7 +30,6 @@ export type Action =
   /** value 付きは上書き入力の開始、なしは既存テキストの編集開始。 */
   | { type: 'startEdit'; value?: string }
   | { type: 'updateEdit'; value: string }
-  | { type: 'commitEdit' }
   | { type: 'cancelEdit' }
   | { type: 'delete' }
   /** 選択範囲を 1 つの罫線ボックスに結合する。 */

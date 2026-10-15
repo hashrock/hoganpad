@@ -48,6 +48,12 @@ export function frameIndicesIn(frames: Frame[], rect: Rect): number[] {
   return frames.flatMap((f, i) => (intersects(f.rect, rect) ? [i] : []));
 }
 
+export type Grid = { cols: number; rows: number };
+
+export function clampToGrid(p: Point, grid: Grid): Point {
+  return { x: clamp(p.x, 0, grid.cols - 1), y: clamp(p.y, 0, grid.rows - 1) };
+}
+
 /**
  * カーソルを 1 歩進めた先のセル。フレーム上にいるときはフレームを 1 マスとして扱い、
  * 反対側の外へ抜ける（Excel の結合セルと同じ）。ページ外には出ない。
@@ -57,13 +63,10 @@ export function step(
   p: Point,
   dx: number,
   dy: number,
-  grid: { cols: number; rows: number },
+  grid: Grid,
 ): Point {
   const f = frames[frameIndexAt(frames, p)];
   const next = (pos: number, d: number, start: number, size: number) =>
     !f || d === 0 ? pos + d : d > 0 ? start + size : start - 1;
-  return {
-    x: clamp(next(p.x, dx, f?.rect.x, f?.rect.w), 0, grid.cols - 1),
-    y: clamp(next(p.y, dy, f?.rect.y, f?.rect.h), 0, grid.rows - 1),
-  };
+  return clampToGrid({ x: next(p.x, dx, f?.rect.x, f?.rect.w), y: next(p.y, dy, f?.rect.y, f?.rect.h) }, grid);
 }
