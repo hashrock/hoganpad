@@ -1,81 +1,53 @@
-import { Item } from '../types';
+import { Doc, Frame, Page, Style } from '../model/doc';
+import { Point } from '../model/rect';
+import { cellSelection, Selection } from './selection';
 
-/** グリッド上の座標（セル単位）。 */
-export interface Point {
-  x: number;
-  y: number;
+export interface Editing {
+  value: string;
+  /**
+   * enter: 入力を始めた直後。矢印キーで確定して移動する（Excel の「入力モード」）。
+   * edit: F2 / ダブルクリック。矢印キーは文字列内のキャレット移動（「編集モード」）。
+   */
+  mode: 'enter' | 'edit';
 }
 
-/**
- * 選択範囲。cursor と anchor の 2 点で表す。
- * - cursor: ドラッグ / Shift / 矢印で動く「主カーソル」。編集位置であり、box 判定の基準。
- * - anchor: クリック起点で固定される選択の反対端。
- * 単一セル選択では cursor === anchor。
- */
-export interface Selection {
-  cursor: Point;
-  anchor: Point;
-}
-
-/** Selection を正規化した矩形（描画・判定用）。getSelectionRect で導出する。 */
-export interface SelectionComputed {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-  w: number;
-  h: number;
-}
-
-/**
- * エディタのドメイン状態。
- * mouseDown / shiftDown のような入力デバイス状態はここには含めない（App の useState で持つ）。
- */
 export interface EditorState {
-  items: Item[];
+  doc: Doc;
   selection: Selection;
-  /** null = 非編集 / { value } = セル編集中。「編集中フラグ」と「編集値」を 1 つに統合。 */
-  editing: { value: string } | null;
+  editing: Editing | null;
+  past: Doc[];
+  future: Doc[];
 }
+
+export type ToggleKey = 'bold' | 'italic' | 'wrap';
 
 export type Action =
-  /** クリック / pointerDown。指定セルへカーソル移動（box なら全体選択）。 */
-  | { type: 'moveTo'; x: number; y: number }
-  /** ドラッグ中。anchor を固定したまま cursor だけ動かす。 */
-  | { type: 'dragTo'; x: number; y: number }
-  /** 矢印キー。box skip 込みで移動。shift 時は選択を伸縮。 */
-  | { type: 'moveArrow'; dx: number; dy: number; shift: boolean }
-  /** Enter 確定後などの相対移動。shift 時は選択を伸縮。 */
-  | { type: 'moveRelative'; dx: number; dy: number; shift: boolean }
-  /** セル編集を開始（選択セルの現在テキストを初期値にする）。 */
-  | { type: 'startEdit' }
-  /** 編集中の入力値を更新。 */
-  | { type: 'changeEditValue'; value: string }
-  /** 編集内容を items へ確定し、編集を終了。 */
+  /** クリック。extend で Shift+クリック / ドラッグ。 */
+  | { type: 'select'; point: Point; extend: boolean }
+  | { type: 'selectAll' }
+  /** 矢印・Enter・Tab。extend で Shift 付き（範囲拡張）。 */
+  | { type: 'move'; dx: number; dy: number; extend: boolean }
+  /** value 付きは上書き入力の開始、なしは既存テキストの編集開始。 */
+  | { type: 'startEdit'; value?: string }
+  | { type: 'updateEdit'; value: string }
   | { type: 'commitEdit' }
-  /** 選択セルの item を削除。 */
-  | { type: 'remove' };
+  | { type: 'cancelEdit' }
+  | { type: 'delete' }
+  /** 選択範囲を 1 つの罫線ボックスに結合する。 */
+  | { type: 'merge' }
+  /** 選択中のフレームにスタイルを適用。フレームが無ければ選択範囲にフレームを作る。 */
+  | { type: 'setStyle'; style: Partial<Style> }
+  | { type: 'toggleStyle'; key: ToggleKey }
+  | { type: 'moveFrames'; dx: number; dy: number }
+  | { type: 'resizeFrames'; dw: number; dh: number }
+  | { type: 'reorder'; to: 'front' | 'back' }
+  /** 左上 (0,0) 基準のフレーム群をアクティブセル位置に貼り付ける。 */
+  | { type: 'paste'; frames: Frame[] }
+  | { type: 'setPage'; page: Partial<Page> }
+  | { type: 'load'; doc: Doc }
+  | { type: 'undo' }
+  | { type: 'redo' };
 
-const initialItems: Item[] = [
-  {
-    x: 1,
-    y: 1,
-    type: 'text',
-    text: 'Excel方眼紙だよ',
-    style: 'bold',
-  },
-  {
-    x: 2,
-    y: 2,
-    type: 'box',
-    width: 10,
-    height: 2,
-    text: '箱だよ',
-  },
-];
-
-export const initialState: EditorState = {
-  items: initialItems,
-  selection: { cursor: { x: 0, y: 0 }, anchor: { x: 0, y: 1 } },
-  editing: null,
-};
+export function createState(doc: Doc): EditorState {
+  return { doc, selection: cellSelection({ x: 0, y: 0 }), editing: null, past: [], future: [] };
+}
